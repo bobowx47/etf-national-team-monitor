@@ -255,6 +255,32 @@ tbody tr:hover{background:rgba(245,196,81,.04)}
   border-radius:6px;padding:3px 6px;font-size:11px;outline:none;margin:0 3px}
 .w-empty{text-align:center;color:var(--txt3);padding:44px 16px;font-size:13px;line-height:2;
   border:1px dashed var(--bd);border-radius:12px}
+/* 买卖信号 */
+.sig{display:flex;align-items:center;gap:10px;margin-top:11px;padding:10px 12px;border-radius:10px;
+  border:1px solid var(--bd);background:rgba(0,0,0,.18)}
+.sig .score{width:42px;height:42px;border-radius:50%;flex:none;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;font-weight:900;font-size:15px;line-height:1}
+.sig .score small{font-size:8px;font-weight:600;opacity:.75;margin-top:2px}
+.sig .info{flex:1;min-width:0}
+.sig .info .lab{font-size:13px;font-weight:800}
+.sig .info .why{font-size:10.5px;color:var(--txt2);line-height:1.6;margin-top:3px}
+.sig.buy{border-color:rgba(255,77,94,.4);background:rgba(255,77,94,.08)}
+.sig.buy .score{background:rgba(255,77,94,.18);color:#ff6b7a}
+.sig.buy .lab{color:#ff6b7a}
+.sig.hold{border-color:rgba(77,139,255,.4);background:rgba(77,139,255,.08)}
+.sig.hold .score{background:rgba(77,139,255,.18);color:#7fa9ff}
+.sig.hold .lab{color:#7fa9ff}
+.sig.neutral .score{background:rgba(125,155,205,.16);color:var(--txt2)}
+.sig.neutral .lab{color:var(--txt2)}
+.sig.weak{border-color:rgba(255,155,92,.4);background:rgba(255,155,92,.08)}
+.sig.weak .score{background:rgba(255,155,92,.18);color:var(--orange)}
+.sig.weak .lab{color:var(--orange)}
+.sig.sell{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.08)}
+.sig.sell .score{background:rgba(34,197,94,.18);color:#4ade80}
+.sig.sell .lab{color:#4ade80}
+.sig.pending{opacity:.6}
+.sig-note{font-size:10.5px;color:var(--txt3);line-height:1.75;margin-top:10px;padding-top:10px;border-top:1px solid var(--bd)}
+.sig-note b{color:var(--gold)}
 .w-empty .big{font-size:34px;display:block;margin-bottom:8px;opacity:.6}
 .wxbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:rgba(34,197,94,.06);
   border:1px solid rgba(34,197,94,.2);border-radius:11px;padding:12px 15px;margin-bottom:14px;font-size:12px;color:var(--txt2)}
@@ -515,6 +541,26 @@ tbody tr:hover{background:rgba(245,196,81,.04)}
   </div>
 
   <div class="card">
+    <details class="guide" style="margin-bottom:0">
+      <summary>🧠 每张卡片下方的"买卖信号"是怎么算的？（点开看）</summary>
+      <div class="g-body">
+        <div>用<b>最近 60 个交易日的真实日K线</b>，算 5 项指标综合打分（0~100 分），再翻译成大白话信号：</div>
+        <ol>
+          <li><b>趋势</b>：股价和 5/10/20 日均线的关系，多头排列加分、空头排列减分。</li>
+          <li><b>位置</b>：现价在近 60 日高低区间的位置，低位是机会区、高位是追高风险区。</li>
+          <li><b>动量</b>：近 5 日、20 日涨跌幅，太强或太弱都会影响分数。</li>
+          <li><b>RSI</b>：超买（&gt;75）提示风险、超卖（&lt;30）提示反弹机会。</li>
+          <li><b>量能</b>：近期成交量比 20 日均量放大还是萎缩。</li>
+        </ol>
+        <div style="margin-top:8px">
+          <b>分数怎么看：</b>🔴≥72 可考虑买入 · 🔵58~71 偏强持有 · ⚪42~57 中性观望 · 🟠28~41 偏弱谨慎 · 🟢&lt;28 建议卖出/回避。（按A股习惯：红=涨=买，绿=跌=卖）
+        </div>
+        <div style="margin-top:8px;color:var(--txt3)">信号每天开盘后自动重算，K线数据在本地缓存半天，点卡片上的"🔄 重算"可强制刷新。<b style="color:var(--orange)">⚠️ 这是技术面量化打分，仅供参考，不构成投资建议；买卖决定请自己做，风险自担。</b></div>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
     <h2><span class="bar"></span>⭐ 添加你想盯的股票 / ETF</h2>
     <div class="sub">把你关注的股票或ETF代码加进来，网页会自动盯盘——一旦放量异动，立刻发微信提醒你</div>
     <div class="watch-add">
@@ -566,8 +612,10 @@ tbody tr:hover{background:rgba(245,196,81,.04)}
   </div>
 
   <div class="card">
-    <h2><span class="bar"></span>我关注的股票 <span id="watchCount" style="color:var(--gold);font-size:13px;margin-left:6px"></span></h2>
-    <div class="sub">红涨绿跌 · 数据每15秒刷新 · 可填成本价自动算盈亏</div>
+    <h2><span class="bar"></span>我关注的股票 <span id="watchCount" style="color:var(--gold);font-size:13px;margin-left:6px"></span>
+      <button id="recalcBtn" style="margin-left:auto;border:1px solid rgba(245,196,81,.35);background:rgba(245,196,81,.1);color:var(--gold);font-size:11px;font-weight:700;padding:5px 11px;border-radius:8px;cursor:pointer">🔄 重算信号</button>
+    </h2>
+    <div class="sub">红涨绿跌 · 行情每15秒刷新 · 买卖信号基于真实日K线每日重算 · 可填成本价自动算盈亏</div>
     <div id="watchList" class="watch-grid"></div>
   </div>
 </div>
@@ -621,7 +669,7 @@ function addWatchStocks(){
     watchlist.push({code,cost:null});ok++;
   });
   saveWatchlist();$('#watchInput').value='';
-  if(ok){buildWatchScripts();renderWatch();}
+  if(ok){buildWatchScripts();renderWatch();setTimeout(()=>fetchKlines(()=>renderWatch()),300);}
   toast(`成功添加 ${ok} 只${dup?'，'+dup+' 只已存在':''}${bad?'，'+bad+' 个代码无效':''}`);
 }
 function addNationETFs(){
@@ -630,6 +678,7 @@ function addNationETFs(){
     watchlist.push({code:e.code,cost:null});ok++;
   });
   saveWatchlist();buildWatchScripts();renderWatch();
+  if(ok)setTimeout(()=>fetchKlines(()=>renderWatch()),300);
   toast(`已加入 ${ok} 只国家队ETF${dup?'，另有 '+dup+' 只已在关注':''}`);
 }
 function removeWatch(code){
@@ -1171,6 +1220,80 @@ function renderNation(){
 }
 
 /* =========== 渲染：我的自选股 =========== */
+/* ===== 自选股买卖信号：基于新浪真实日K线的多因子打分 ===== */
+const KLINE_CACHE={}; // code -> {ts, data}
+function fetchKlines(cb){
+  let pending=watchlist.length;
+  if(!pending){cb&&cb();return;}
+  watchlist.forEach(w=>{
+    const c=w.code,cached=KLINE_CACHE[c];
+    if(cached&&Date.now()-cached.ts<6*3600*1000){if(--pending===0)cb&&cb();return;} // 缓存6小时
+    const vn='_W_'+c;
+    try{delete window[vn];}catch(e){}
+    const s=document.createElement('script');try{s.charset='GBK';}catch(e){}
+    s.src=`https://quotes.sina.cn/cn/api/jsonp_v2.php/var%20${vn}=/CN_MarketDataService.getKLineData?symbol=${c}&scale=240&ma=no&datalen=70&r=${Date.now()}`;
+    s.onload=()=>{
+      try{const arr=window[vn];if(Array.isArray(arr)&&arr.length>=21){KLINE_CACHE[c]={ts:Date.now(),data:arr};}}catch(e){}
+      if(--pending===0)cb&&cb();
+    };
+    s.onerror=()=>{if(--pending===0)cb&&cb();};
+    const box=document.getElementById('qtbox')||document.body;box.appendChild(s);
+  });
+}
+function calcSignal(code){
+  const c=KLINE_CACHE[code];if(!c||!c.data||c.data.length<21)return null;
+  const k=c.data;
+  const close=k.map(x=>parseFloat(x.close)),vol=k.map(x=>parseFloat(x.volume)||0);
+  const p=close[close.length-1];
+  const avg=a=>a.reduce((s,x)=>s+x,0)/a.length;
+  const ma5=avg(close.slice(-5)),ma10=avg(close.slice(-10)),ma20=avg(close.slice(-20));
+  const win=close.slice(-60),hi=Math.max(...win),lo=Math.min(...win);
+  const pos=hi>lo?(p-lo)/(hi-lo)*100:50;
+  const m5=close.length>6?(p/close[close.length-6]-1)*100:0;
+  const m20=close.length>21?(p/close[close.length-21]-1)*100:0;
+  let ag=0,al=0;
+  for(let i=close.length-14;i<close.length;i++){const d=close[i]-close[i-1];ag+=Math.max(d,0);al+=Math.max(-d,0);}
+  ag/=14;al/=14;const rsi=al===0?100:100-100/(1+ag/al);
+  const v5=avg(vol.slice(-5)),v20=avg(vol.slice(-20)),vr=v20?v5/v20:1;
+  let score=50;const reasons=[];
+  if(p>ma5&&ma5>ma10&&ma10>ma20){score+=20;reasons.push('均线多头排列，趋势向上');}
+  else if(p<ma5&&ma5<ma10&&ma10<ma20){score-=20;reasons.push('均线空头排列，趋势向下');}
+  else if(p>ma20){score+=8;reasons.push('站稳20日均线');}
+  else{score-=8;reasons.push('跌破20日均线');}
+  if(pos<25){score+=15;reasons.push('处于60日低位，机会区');}
+  else if(pos>80){score-=15;reasons.push('处于60日高位，追高风险');}
+  else if(pos<45){score+=6;reasons.push('位置偏低');}
+  else if(pos>65){score-=6;reasons.push('位置偏高');}
+  if(m5>5){score+=8;reasons.push('近5日强势上涨');}
+  else if(m5<-5){score-=8;reasons.push('近5日回调');}
+  if(m20>10){score+=7;reasons.push('近20日涨幅较大');}
+  else if(m20<-10){score-=7;reasons.push('近20日跌幅较大');}
+  if(rsi>75){score-=10;reasons.push('RSI超买');}
+  else if(rsi<30){score+=10;reasons.push('RSI超卖，反弹机会');}
+  else if(rsi>40&&rsi<65){score+=4;reasons.push('RSI健康');}
+  if(vr>1.2){score+=8;reasons.push('近期温和放量');}
+  else if(vr<0.7){score-=5;reasons.push('量能萎缩');}
+  score=Math.max(0,Math.min(100,Math.round(score)));
+  let cls,lab,emo;
+  if(score>=72){cls='buy';lab='可考虑买入';emo='🔴';}      // A股：红=涨=买
+  else if(score>=58){cls='hold';lab='偏强 · 持有为主';emo='🔵';}
+  else if(score>=42){cls='neutral';lab='中性 · 观望';emo='⚪';}
+  else if(score>=28){cls='weak';lab='偏弱 · 谨慎';emo='🟠';}
+  else{cls='sell';lab='建议卖出 / 回避';emo='🟢';}       // A股：绿=跌=卖
+  return {score,cls,lab,emo,why:reasons.slice(0,4).join('、'),day:k[k.length-1].day};
+}
+function recalcSignals(){
+  toast('正在重新计算买卖信号…');
+  watchlist.forEach(w=>delete KLINE_CACHE[w.code]);
+  fetchKlines(()=>renderWatch());
+}
+function signalHtml(code){
+  const s=calcSignal(code);
+  if(!s)return `<div class="sig pending"><div class="score">--<small>计算中</small></div><div class="info"><div class="lab">正在获取日K线…</div><div class="why">首次加载需几秒，之后自动缓存</div></div></div>`;
+  return `<div class="sig ${s.cls}"><div class="score">${s.score}<small>分</small></div>
+    <div class="info"><div class="lab">${s.emo} ${s.lab}</div><div class="why">${s.why}（截至 ${s.day}）</div></div></div>`;
+}
+
 function renderWatch(){
   const box=$('#watchList');if(!box)return;
   $('#watchCount').textContent=watchlist.length?`(${watchlist.length} 只)`:'';
@@ -1201,6 +1324,7 @@ function renderWatch(){
       <div class="wp"><span class="p ${cls}">${hasData?price.toFixed(dec):'--'}</span><span class="c ${cls}">${hasData?(pct>0?'+':'')+pct.toFixed(2)+'%':'--'}</span></div>
       <div class="wm"><div>量比<b>${hasData?ratio.toFixed(2):'--'}</b></div><div>换手<b>${hasData?turn.toFixed(1)+'%':'--'}</b></div><div>成交额<b>${hasData?(q.amount/1e4).toFixed(1)+'亿':'--'}</b></div></div>
       <span class="wtag ${tagCls}">${tagTxt}</span>
+      ${signalHtml(w.code)}
       ${costHtml}
       <div class="wcost">成本价 <input type="number" step="${isETF(w.code)?'0.001':'0.01'}" placeholder="选填" value="${w.cost||''}" onchange="setWatchCost('${w.code}',this)" /> 元 · 填了自动算盈亏</div>
     </div>`;
@@ -1226,8 +1350,11 @@ function init(){
   $('#sckeySaveBtn').onclick=saveSckey;
   $('#sckeyInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveSckey();});
   $('#wxTestBtn').onclick=testPush;
+  $('#recalcBtn').onclick=recalcSignals;
   renderAll();
   parseWatchQuotes();renderWatch();updateWxStatus();
+  // 拉取自选股日K线，算完后重绘信号（不阻塞其它数据）
+  if(watchlist.length)setTimeout(()=>fetchKlines(()=>renderWatch()),400);
 }
 init();
 
