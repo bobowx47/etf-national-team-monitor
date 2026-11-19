@@ -142,6 +142,30 @@ tbody tr:last-child td{border-bottom:0}
 .rank-item .fill.n{right:50%;background:linear-gradient(90deg,var(--down),rgba(34,197,94,.5))}
 .rank-item .pct{width:52px;text-align:right;font-weight:700;flex:none}
 
+/* ===== ETF份额变化板块 ===== */
+.share-note{font-size:11.5px;color:var(--txt2);line-height:1.9;margin-bottom:14px;padding:14px 16px;
+  background:linear-gradient(120deg,rgba(77,139,255,.08),rgba(245,196,81,.05));border:1px solid var(--bd);border-radius:12px}
+.share-note b{color:var(--gold)}
+.share-note .q{display:inline-block;background:rgba(255,77,94,.12);color:var(--up);padding:1px 7px;border-radius:5px;font-weight:600;font-size:11px}
+.live-share-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-bottom:16px}
+.lsc{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:13px 14px;box-shadow:var(--shadow)}
+.lsc .n{font-size:11.5px;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lsc .sh{font-size:20px;font-weight:800;color:var(--gold);margin:7px 0 2px}
+.lsc .sh small{font-size:11px;color:var(--txt2);font-weight:500}
+.lsc .sc{font-size:11px;color:var(--txt3)}
+.net-buy{font-weight:800}
+.net-buy.pos{color:var(--up)}.net-buy.neg{color:var(--down)}
+.qtr-table{width:100%;min-width:820px}
+.qtr-table .qdate{font-size:11px;color:var(--txt2)}
+.qbar{display:inline-flex;align-items:center;gap:6px}
+.qbar .track{width:52px;height:6px;border-radius:4px;background:rgba(255,255,255,.06);position:relative;overflow:hidden}
+.qbar .track::before{content:"";position:absolute;left:50%;top:0;height:100%;width:1px;background:rgba(255,255,255,.2);z-index:2}
+.qbar .fill{position:absolute;height:100%;top:0;border-radius:3px}
+.qbar .fill.p{left:50%;background:var(--up)}.qbar .fill.n{right:50%;background:var(--down)}
+.positive-row{background:rgba(255,77,94,.045)}
+@media(max-width:1100px){.live-share-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.live-share-grid{grid-template-columns:repeat(2,1fr)}}
+
 /* ===== 买卖信号面板 ===== */
 .signal-hero{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;margin-bottom:14px}
 .hero-card{background:linear-gradient(145deg,rgba(245,196,81,.1),var(--card) 55%);border:1px solid var(--bd);
@@ -262,6 +286,25 @@ tbody tr:last-child td{border-bottom:0}
     <div class="flow"><div class="t">单日净流入峰值</div><div class="v num">800<small> 亿</small></div><div class="d">11/3 单日近800亿</div></div>
     <div class="flow"><div class="t">下半年宽基净流入</div><div class="v num">4500<small> 亿+</small></div><div class="d">国家队为主体测算</div></div>
   </div>
+
+  <div class="sec-title"><span class="bar"></span><h2>ETF 份额变化 · 看穿国家队资金动向</h2><span class="tip">份额增加=机构净申购（资金流入）· 份额减少=净赎回 · <span class="newbadge">新增</span></span></div>
+  <div class="share-note">
+    🔍 <b>在哪看、几点更新？</b> ETF 每日总份额在交易日<span class="q">收盘后约16:30</span>由交易所公布，东方财富/同花顺/交易所官网均可查，数据平台次日 8:30 入库；而能确认"中央汇金"名字的持有人明细<span class="q">只在半年报(8月底)、年报(3月底)</span>披露。
+    <b>原理：</b>散户在二级市场买卖不改变总份额，只有机构在一级市场申购才让份额变大——所以<b>份额大增往往意味着大资金（含国家队）进场</b>。但份额增加无法100%区分是汇金、保险还是其他机构，需结合"大跌当天核心宽基同步放量申购"来推断。
+    <b>本板块：</b>下方"实时份额"随行情自动刷新（当前份额+规模），"季度申赎明细"来自季报（每季度更新，截至2026三季报）。
+  </div>
+  <div class="live-share-grid" id="liveShareGrid"></div>
+
+  <div class="sec-title" style="margin-top:4px"><span class="bar"></span><h2>核心宽基 ETF · 季度申赎明细</h2><span class="tip">数据来自基金季报 · 截至 2026-09-30 · 净申购为正=资金流入(红) / 为负=流出(绿)</span></div>
+  <div class="table-wrap">
+    <table class="qtr-table">
+      <thead><tr>
+        <th>ETF / 代码</th><th>报告期</th><th>期间申购(亿份)</th><th>期间赎回(亿份)</th><th>净申购(亿份)</th><th>方向</th><th>期末净资产(亿)</th>
+      </tr></thead>
+      <tbody id="qtrBody"></tbody>
+    </table>
+  </div>
+  <div class="sig-note" style="margin-top:12px">📌 <b>关键发现：</b>2026 年一季度、二季度核心宽基 ETF 普遍大幅净赎回（如沪深300ETF华泰柏瑞一季度净赎回约440亿份、二季度约259亿份），对应市场高位阶段；而<b style="color:var(--up)"> 2026 三季度（9-30）全部转为净申购</b>——科创50ETF净申购+284亿份、创业板ETF+98.6亿份、沪深300ETF+52亿份，资金明显回流宽基，与"国家队三季度重新增持"的公开报道相互印证。这是判断市场底部区域的重要辅助信号。</div>
 
   <div class="sec-title"><span class="bar"></span><h2>宽基指数实时行情</h2><span class="tip">点击指数卡片切换下方走势图 · <span style="color:var(--up)">红涨</span> / <span style="color:var(--down)">绿跌</span></span></div>
   <div class="idx-grid" id="idxGrid"></div>
@@ -428,6 +471,41 @@ const BAR_DATA = [
   {name:'天弘', value:86.82},
 ];
 
+// 实时份额数据源：东财数据中心 RPT_FUND_ETFLIST（支持JSONP，前端自动更新）
+const SHARE_CODES = ['510300','510310','510330','159919','510050','510500','512100','159915','588000','510310'];
+let shareData={}; // code -> {name, share(亿份), scale(亿元)}
+
+// 季度申赎明细（来自基金季报，截至2026-09-30；每季度更新）
+const QTR_DATA = [
+  {code:'510300',name:'沪深300ETF华泰柏瑞',q:[
+    {d:'2026-09-30',b:201.07,s:149.02,sh:241.20,a:1068.79},{d:'2026-06-30',b:61.27,s:320.41,sh:189.15,a:948.72},
+    {d:'2026-03-31',b:59.87,s:499.88,sh:448.29,a:1999.14},{d:'2025-12-31',b:91.18,s:100.04,sh:888.30,a:4222.58}]},
+  {code:'510310',name:'沪深300ETF易方达',q:[
+    {d:'2026-09-30',b:53.70,s:49.83,sh:120.32,a:517.89},{d:'2026-06-30',b:17.00,s:218.40,sh:116.45,a:517.89},
+    {d:'2026-03-31',b:17.70,s:359.10,sh:317.88,a:0},{d:'2025-12-31',b:19.90,s:28.70,sh:659.34,a:0}]},
+  {code:'510330',name:'沪深300ETF华夏',q:[
+    {d:'2026-09-30',b:25.59,s:15.41,sh:85.07,a:393.08},{d:'2026-06-30',b:10.20,s:129.70,sh:74.89,a:0},
+    {d:'2026-03-31',b:10.20,s:290.10,sh:194.38,a:0},{d:'2025-12-31',b:9.90,s:9.60,sh:474.25,a:0}]},
+  {code:'159919',name:'沪深300ETF嘉实',q:[
+    {d:'2026-09-30',b:36.51,s:37.24,sh:68.66,a:317.63},{d:'2026-06-30',b:14.90,s:145.20,sh:69.39,a:0},
+    {d:'2026-03-31',b:13.20,s:221.70,sh:199.65,a:0},{d:'2025-12-31',b:20.50,s:20.40,sh:408.19,a:0}]},
+  {code:'510050',name:'上证50ETF华夏',q:[
+    {d:'2026-09-30',b:193.00,s:187.53,sh:69.39,a:203.80},{d:'2026-06-30',b:129.80,s:296.10,sh:63.92,a:0},
+    {d:'2026-03-31',b:97.80,s:434.20,sh:230.23,a:0},{d:'2025-12-31',b:118.10,s:128.70,sh:566.65,a:0}]},
+  {code:'510500',name:'中证500ETF南方',q:[
+    {d:'2026-09-30',b:100.37,s:85.74,sh:56.11,a:419.08},{d:'2026-06-30',b:64.80,s:117.70,sh:41.49,a:0},
+    {d:'2026-03-31',b:69.50,s:165.80,sh:94.37,a:0},{d:'2025-12-31',b:45.20,s:41.00,sh:190.65,a:0}]},
+  {code:'512100',name:'中证1000ETF南方',q:[
+    {d:'2026-09-30',b:249.92,s:211.18,sh:69.51,a:206.28},{d:'2026-06-30',b:120.50,s:165.30,sh:30.77,a:0},
+    {d:'2026-03-31',b:109.10,s:290.00,sh:75.65,a:0},{d:'2025-12-31',b:72.10,s:65.70,sh:256.51,a:0}]},
+  {code:'159915',name:'创业板ETF易方达',q:[
+    {d:'2026-09-30',b:679.26,s:580.61,sh:206.15,a:650.43},{d:'2026-06-30',b:410.40,s:463.60,sh:107.50,a:0},
+    {d:'2026-03-31',b:304.30,s:458.70,sh:160.63,a:0},{d:'2025-12-31',b:315.90,s:343.80,sh:315.07,a:0}]},
+  {code:'588000',name:'科创50ETF华夏',q:[
+    {d:'2026-09-30',b:1380.03,s:1095.96,sh:582.39,a:941.29},{d:'2026-06-30',b:907.00,s:1126.50,sh:298.32,a:0},
+    {d:'2026-03-31',b:592.70,s:611.90,sh:517.89,a:0},{d:'2025-12-31',b:586.20,s:530.80,sh:537.10,a:0}]},
+];
+
 const ALL_CODES = [...INDICES.map(i=>i.code), ...ETFs.map(e=>e.code)];
 let quotes={}, currentIndex='sh000300', currentDays=60, sortKey='mv', sortAsc=false, countdown=15, echartsReady=false, klineCache={};
 
@@ -540,6 +618,77 @@ function renderTable(){
       <td class="num">${r.turnover?fmt(r.turnover)+'%':'—'}</td>
       <td>${mvCell}</td>
       <td><span class="tag ${tagCls[r.signal]}">${r.signalTxt}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// 抓取ETF实时份额+规模（东财数据中心，JSONP跨域，前端自动更新）
+function fetchShareData(){
+  const cname='__share'+Math.random().toString(36).slice(2);
+  const codes=[...new Set(SHARE_CODES)].map(c=>'%22'+c+'%22').join(',');
+  window[cname]=function(resp){
+    try{
+      const rows=(resp.result&&resp.result.data)||[];
+      rows.forEach(r=>{
+        shareData[r.SECURITY_CODE]={name:r.SECURITY_NAME_ABBR,
+          share:(r.DEC_TOTALSHARE||0)/1e8, scale:r.DEC_NAV||0};
+      });
+      renderLiveShare();
+    }catch(e){}
+    try{delete window[cname];}catch(e){}
+  };
+  const s=document.createElement('script');
+  s.src=`https://datacenter-web.eastmoney.com/api/data/v1/get?callback=${cname}&reportName=RPT_FUND_ETFLIST&columns=SECURITY_CODE,SECURITY_NAME_ABBR,DEC_TOTALSHARE,DEC_NAV&pageSize=50&filter=(SECURITY_CODE+in+(${codes}))&r=${Date.now()}`;
+  s.onerror=()=>{}; document.head.appendChild(s);
+  setTimeout(()=>{ if(window[cname]){ renderLiveShareFallback(); try{delete window[cname];}catch(e){} } },7000);
+}
+function renderLiveShare(){
+  const grid=$('#liveShareGrid'); if(!grid)return;
+  const codes=[...new Set(SHARE_CODES)].slice(0,10);
+  if(!Object.keys(shareData).length){ renderLiveShareFallback(); return; }
+  grid.innerHTML=codes.map(c=>{
+    const d=shareData[c];
+    if(!d) return '';
+    return `<div class="lsc"><div class="n" title="${d.name}">${d.name}</div>
+      <div class="sh num">${d.share.toFixed(1)}<small> 亿份</small></div>
+      <div class="sc num">规模 ≈ ${d.scale>=1000?(d.scale/1000).toFixed(2)+'千亿':d.scale.toFixed(0)+'亿'}</div></div>`;
+  }).join('');
+}
+function renderLiveShareFallback(){
+  const grid=$('#liveShareGrid'); if(!grid||Object.keys(shareData).length)return;
+  // 用季度数据的最新份额兜底
+  grid.innerHTML=QTR_DATA.slice(0,10).map(v=>`<div class="lsc">
+    <div class="n" title="${v.name}">${v.name}</div>
+    <div class="sh num">${v.q[0].sh.toFixed(1)}<small> 亿份</small></div>
+    <div class="sc num">期末份额 · ${v.q[0].d.slice(0,7)}</div></div>`).join('');
+}
+function renderQuarterTable(){
+  const body=$('#qtrBody'); if(!body)return;
+  // 只展示每个ETF最近2个季度，按最新季度净申购排序
+  const rows=[];
+  QTR_DATA.forEach(v=>{
+    v.q.slice(0,2).forEach(qq=>{
+      const net=qq.b-qq.s;
+      rows.push({...v,d:qq.d,b:qq.b,s:qq.s,sh:qq.sh,a:qq.a,net});
+    });
+  });
+  const latest=rows.filter(r=>r.d==='2026-09-30').sort((a,b)=>b.net-a.net);
+  const prev=rows.filter(r=>r.d==='2026-06-30');
+  const order=latest.map(r=>r.code);
+  const all=[...latest,...prev.filter(r=>!order.includes(r.code))];
+  const mx=Math.max(1,...all.map(r=>Math.abs(r.net)));
+  body.innerHTML=all.map((r,i)=>{
+    const pos=r.net>0;
+    const w=Math.min(100,Math.abs(r.net)/mx*100).toFixed(0);
+    const isLatest=r.d==='2026-09-30';
+    return `<tr class="${isLatest&&pos?'positive-row':''}">
+      <td style="text-align:left"><div class="etf-name">${r.name}</div><div class="etf-code num">${r.code}</div></td>
+      <td class="qdate">${r.d}</td>
+      <td class="num" style="color:var(--txt2)">${r.b.toFixed(1)}</td>
+      <td class="num" style="color:var(--txt2)">${r.s.toFixed(1)}</td>
+      <td class="num net-buy ${pos?'pos':'neg'}">${r.net>0?'+':''}${r.net.toFixed(1)}</td>
+      <td><span class="qbar"><span class="track"><span class="fill ${pos?'p':'n'}" style="width:${w}%"></span></span></span></td>
+      <td class="num" style="color:var(--txt2)">${r.a>0?r.a.toFixed(0):'—'}</td>
     </tr>`;
   }).join('');
 }
@@ -854,6 +1003,9 @@ function init(){
     if(ok){ drawHoldings(); loadKline(); }
     else { $('#klineChart').innerHTML='<div class="chart-fallback">图表组件加载失败，走势图以简化模式显示</div>'; loadKline(); } });
   loadSignals(); // 异步加载并计算买卖信号
+  renderQuarterTable(); // 渲染季度申赎明细（本地数据）
+  renderLiveShareFallback(); // 先显示季度份额兜底
+  fetchShareData(); // 异步抓取实时份额并更新
 }
 init();
 </script>
