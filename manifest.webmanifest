@@ -1,0 +1,17 @@
+{
+  "name": "国家队ETF · 买卖决策看板",
+  "short_name": "ETF决策看板",
+  "description": "把复杂数据翻译成大白话，告诉你现在该买还是在等。国家队ETF、板块机会、强势个股、连板妖股、自选股放量提醒。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#080c16",
+  "theme_color": "#0e1526",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
