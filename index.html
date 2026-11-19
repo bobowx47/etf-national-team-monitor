@@ -2,8 +2,17 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>国家队ETF · 买卖决策看板</title>
+<!-- PWA：安装到手机桌面 -->
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="icon" type="image/png" href="./icon-192.png">
+<meta name="theme-color" content="#0e1526">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ETF决策看板">
 <style>
 :root{
   --bg:#080c16;--bg2:#0e1526;--card:rgba(20,29,47,.82);--card2:#141d2f;
@@ -50,6 +59,37 @@ nav button.on{background:linear-gradient(135deg,var(--gold),#d9a521);color:#1a12
 .page{display:none;animation:fade .3s}
 .page.on{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* 安装到桌面横幅 */
+.install-banner{display:none;align-items:center;gap:12px;padding:13px 16px;margin-bottom:14px;
+  background:linear-gradient(120deg,rgba(245,196,81,.14),rgba(77,139,255,.1));
+  border:1px solid rgba(245,196,81,.3);border-radius:14px;box-shadow:var(--shadow)}
+.install-banner.show{display:flex}
+.install-banner .ib-icon{width:44px;height:44px;border-radius:11px;flex:none;
+  background:linear-gradient(145deg,#f5c451,#c8901f);display:flex;align-items:center;justify-content:center;font-size:24px}
+.install-banner .ib-txt{flex:1;min-width:0}
+.install-banner .ib-txt b{font-size:13.5px;color:var(--gold)}
+.install-banner .ib-txt p{font-size:11px;color:var(--txt2);margin-top:2px}
+.install-banner .ib-btn{border:0;background:linear-gradient(135deg,#f5c451,#d9a521);color:#1a1206;
+  font-weight:800;font-size:12.5px;padding:9px 15px;border-radius:9px;cursor:pointer;white-space:nowrap;flex:none}
+.install-banner .ib-x{border:0;background:transparent;color:var(--txt3);font-size:20px;cursor:pointer;
+  padding:0 4px;line-height:1;flex:none}
+/* 安装指引弹层 */
+.install-mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:999;
+  align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
+.install-mask.show{display:flex}
+.install-dialog{background:linear-gradient(160deg,#141d2f,#0e1526);border:1px solid var(--bd);
+  border-radius:18px;padding:24px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.6);position:relative}
+.install-dialog h3{font-size:18px;color:var(--gold);margin-bottom:4px}
+.install-dialog .lead{font-size:12px;color:var(--txt2);margin-bottom:16px}
+.install-dialog .step{display:flex;gap:12px;align-items:flex-start;margin:13px 0}
+.install-dialog .step .n{width:26px;height:26px;border-radius:50%;flex:none;background:rgba(245,196,81,.16);
+  color:var(--gold);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.install-dialog .step .t{font-size:13px;line-height:1.7;color:var(--txt)}
+.install-dialog .step .t b{color:var(--gold)}
+.install-dialog .close{position:absolute;top:14px;right:16px;border:0;background:transparent;
+  color:var(--txt3);font-size:24px;cursor:pointer;line-height:1}
+.install-dialog .tip{font-size:11px;color:var(--txt3);margin-top:16px;padding-top:14px;border-top:1px solid var(--bd);line-height:1.7}
 
 /* 通用卡片 */
 .card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:20px 22px;box-shadow:var(--shadow);margin-bottom:14px}
@@ -253,6 +293,14 @@ tbody tr:hover{background:rgba(245,196,81,.04)}
 </head>
 <body>
 <div class="wrap">
+
+<!-- 安装到桌面横幅 -->
+<div class="install-banner" id="installBanner">
+  <div class="ib-icon">📊</div>
+  <div class="ib-txt"><b>装到手机桌面，像软件一样打开</b><p>全屏无浏览器地址栏 · 一点即开 · 行情照样实时</p></div>
+  <button class="ib-btn" id="installBtn">立即安装</button>
+  <button class="ib-x" id="installX" title="不再提示">×</button>
+</div>
 
 <header>
   <div class="brand">
@@ -1182,6 +1230,66 @@ function init(){
   parseWatchQuotes();renderWatch();updateWxStatus();
 }
 init();
+
+/* ===== PWA：安装到手机桌面 + 离线缓存 ===== */
+// 注册 Service Worker（行情接口在 sw.js 里被排除，永远走实时网络）
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
+
+// 安装引导逻辑
+(function(){
+  const banner=document.getElementById('installBanner');
+  const btn=document.getElementById('installBtn');
+  const x=document.getElementById('installX');
+  const mask=document.getElementById('installMask');
+  const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+  const isMobile=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  const dismissed=localStorage.getItem('etf_install_dismissed')==='1';
+  let deferredPrompt=null;
+
+  // Android/Chrome：捕获原生安装事件，可一键安装
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault();deferredPrompt=e;
+    if(!isStandalone&&!dismissed)banner.classList.add('show');
+  });
+  // iOS Safari 没有原生事件：手机端手动显示提示
+  if(/iPad|iPhone|iPod/.test(navigator.userAgent)&&!isStandalone&&!dismissed){
+    banner.classList.add('show');
+  }
+
+  function openGuide(){mask.classList.add('show');}
+  function closeGuide(){mask.classList.remove('show');}
+  btn.addEventListener('click',()=>{
+    if(deferredPrompt){ // Chrome 原生安装
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(()=>{banner.classList.remove('show');deferredPrompt=null;});
+    }else{ // iOS / 其他：显示图文步骤
+      openGuide();
+    }
+  });
+  x.addEventListener('click',()=>{banner.classList.remove('show');localStorage.setItem('etf_install_dismissed','1');});
+  mask.addEventListener('click',e=>{if(e.target===mask)closeGuide();});
+  document.getElementById('installMaskClose').addEventListener('click',closeGuide);
+  document.getElementById('installGoBtn').addEventListener('click',closeGuide);
+})();
 </script>
+
+<!-- 安装指引弹层 -->
+<div class="install-mask" id="installMask">
+  <div class="install-dialog">
+    <button class="close" id="installMaskClose">×</button>
+    <h3>📊 装到手机桌面</h3>
+    <p class="lead">按下面几步点一下，桌面就会出现 App 图标，以后一点即开、全屏使用。</p>
+    <div class="step"><div class="n">1</div><div class="t">用手机<b>自带浏览器</b>打开这个网页：<br>iPhone 用 <b>Safari</b>，安卓用 <b>Chrome / 夸克 / 系统浏览器</b>。</div></div>
+    <div class="step"><div class="n">2</div><div class="t">点浏览器<b>底部或右上角的「分享 / 菜单」</b>按钮<br>（iPhone 是方框带向上箭头 ⬆️，安卓是 ⋮ 三个点）。</div></div>
+    <div class="step"><div class="n">3</div><div class="t">在菜单里找到并点 <b>「添加到主屏幕」</b> 或 <b>「安装应用」</b>。</div></div>
+    <div class="step"><div class="n">4</div><div class="t">点右上角<b>「添加」</b>确认，桌面就多了一个 <b>📊 ETF决策看板</b> 图标。</div></div>
+    <div class="tip">装好后从桌面图标打开就是全屏 App 的样子。你的自选股和微信 key 跟浏览器里是同一份，不会丢。行情数据是实时联网的，断网时能看到上次打开的页面。</div>
+    <button class="ib-btn" id="installGoBtn" style="width:100%;margin-top:16px">知道了</button>
+  </div>
+</div>
 </body>
 </html>
