@@ -1239,8 +1239,8 @@ if('serviceWorker' in navigator){
   });
 }
 
-// 安装引导逻辑
-(function(){
+// 安装引导逻辑（等 DOM 解析完成后再绑定，弹层在 body 末尾）
+document.addEventListener('DOMContentLoaded',function(){
   const banner=document.getElementById('installBanner');
   const btn=document.getElementById('installBtn');
   const x=document.getElementById('installX');
@@ -1274,7 +1274,7 @@ if('serviceWorker' in navigator){
   mask.addEventListener('click',e=>{if(e.target===mask)closeGuide();});
   document.getElementById('installMaskClose').addEventListener('click',closeGuide);
   document.getElementById('installGoBtn').addEventListener('click',closeGuide);
-})();
+});
 </script>
 
 <!-- 安装指引弹层 -->
