@@ -181,6 +181,47 @@ tbody tr:hover{background:rgba(245,196,81,.04)}
   border:1px solid rgba(245,196,81,.35);color:var(--txt);padding:10px 18px;border-radius:10px;font-size:13px;
   box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s;z-index:99}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ===== 我的自选股模块 ===== */
+.watch-add{display:flex;gap:9px;margin-bottom:12px;flex-wrap:wrap}
+.watch-add input{flex:1;min-width:200px;background:var(--card);border:1px solid var(--bd);color:var(--txt);
+  padding:11px 13px;border-radius:10px;font-size:13px;outline:none}
+.watch-add input:focus{border-color:rgba(245,196,81,.45)}
+.watch-add input::placeholder{color:var(--txt3)}
+.watch-add button{border:0;background:linear-gradient(135deg,#f5c441,#e8a92b);color:#1a1408;font-weight:800;
+  padding:11px 20px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap}
+.watch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+@media(max-width:900px){.watch-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.watch-grid{grid-template-columns:1fr}}
+.wcard{background:var(--card);border:1px solid var(--bd);border-radius:13px;padding:14px 15px;box-shadow:var(--shadow);position:relative}
+.wcard.alert{border-color:rgba(255,77,94,.55);background:linear-gradient(135deg,rgba(255,77,94,.09),var(--card) 55%)}
+.wcard .del{position:absolute;top:11px;right:12px;color:var(--txt3);cursor:pointer;font-size:18px;line-height:1;
+  width:24px;height:24px;text-align:center;border-radius:6px}
+.wcard .del:hover{background:rgba(255,77,94,.15);color:var(--up)}
+.wcard .wn{font-size:15px;font-weight:800;padding-right:26px}
+.wcard .wc{font-size:10.5px;color:var(--txt3);margin-top:2px;font-family:monospace}
+.wcard .wp{display:flex;align-items:baseline;gap:9px;margin:11px 0 9px}
+.wcard .wp .p{font-size:23px;font-weight:900}
+.wcard .wp .c{font-size:12.5px;font-weight:700}
+.wcard .wm{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding-top:9px;border-top:1px solid var(--bd);
+  font-size:10px;color:var(--txt3);text-align:center}
+.wcard .wm b{display:block;color:var(--txt2);font-size:11.5px;margin-top:2px;font-weight:700}
+.wcard .wtag{display:inline-block;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:20px;margin-top:10px}
+.wtag.alert{background:rgba(255,77,94,.16);color:#ff6b7a;border:1px solid rgba(255,77,94,.4)}
+.wtag.ok{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.3)}
+.wtag.idle{background:rgba(125,155,205,.12);color:var(--txt2);border:1px solid var(--bd)}
+.wcard .wcost{font-size:10.5px;color:var(--txt3);margin-top:8px}
+.wcard .wcost input{width:66px;background:var(--card2);border:1px solid var(--bd);color:var(--gold);
+  border-radius:6px;padding:3px 6px;font-size:11px;outline:none;margin:0 3px}
+.w-empty{text-align:center;color:var(--txt3);padding:44px 16px;font-size:13px;line-height:2;
+  border:1px dashed var(--bd);border-radius:12px}
+.w-empty .big{font-size:34px;display:block;margin-bottom:8px;opacity:.6}
+.wxbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:rgba(34,197,94,.06);
+  border:1px solid rgba(34,197,94,.2);border-radius:11px;padding:12px 15px;margin-bottom:14px;font-size:12px;color:var(--txt2)}
+.wxbar .on{color:#4ade80;font-weight:700}
+.wxbar button{margin-left:auto;border:1px solid rgba(34,197,94,.35);background:rgba(34,197,94,.1);
+  color:#4ade80;padding:7px 13px;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer}
+.wxbar button:hover{background:rgba(34,197,94,.2)}
 </style>
 </head>
 <body>
@@ -208,6 +249,7 @@ tbody tr:hover{background:rgba(245,196,81,.04)}
   <button data-p="stock">🚀 强势个股</button>
   <button data-p="limit">🔥 连板妖股</button>
   <button data-p="nation">🏛️ 国家队持仓</button>
+  <button data-p="watch" style="background:rgba(245,196,81,.14);color:var(--gold)">⭐ 我的自选股</button>
 </nav>
 
 <!-- ============ 页面1：今日判断 ============ -->
@@ -390,6 +432,39 @@ tbody tr:hover{background:rgba(245,196,81,.04)}
   </div>
 </div>
 
+<!-- ============ 页面7：我的自选股 ============ -->
+<div class="page" id="p-watch">
+  <div class="card">
+    <h2><span class="bar"></span>⭐ 添加你想盯的股票</h2>
+    <div class="sub">把你关注的股票代码加进来，网页会自动盯盘——一旦放量异动，立刻发微信提醒你</div>
+    <div class="watch-add">
+      <input id="watchInput" placeholder="输入6位代码，如 002475；可一次输入多个，用逗号/空格隔开" />
+      <button id="watchAddBtn">＋ 添加关注</button>
+    </div>
+    <div style="font-size:11px;color:var(--txt3);line-height:1.8">
+      支持沪深A股，输入 6 位数字即可（6 开头自动识别为沪市，其余为深市）。例如：<b style="color:var(--gold)">002475, 600519, 300750</b>。添加后会保存在本机浏览器，下次打开还在。
+    </div>
+  </div>
+
+  <div class="wxbar">
+    <span>📱 微信放量提醒：<span class="on" id="wxStatus">已开启</span></span>
+    <span style="color:var(--txt3)">· 网页打开时自动盯盘，放量即推送</span>
+    <button id="wxTestBtn">📤 发条测试消息</button>
+  </div>
+
+  <div class="explain">
+    <b>什么叫"放量"？</b>成交量突然比平时放大（量比 ≥ 2 倍）。放量往往意味着<b>有资金在动作</b>——可能是启动，也可能是出货。所以提醒是让你<b>去看一眼</b>，不是让你直接买。<br>
+    <b>提醒规则：</b><span class="k">放量上涨</span>量比≥2 且涨超2% → "🚀 放量走强"，可关注；<span class="k">放量下跌</span>量比≥2 且跌超2% → "⚠️ 放量下挫"，注意风险。同一只股票 60 分钟内只提醒一次，避免打扰。<br>
+    <b>盯盘时段：</b>交易日 9:25-11:30、13:00-15:00。收盘后网页显示的是当日收盘数据，不会推送。
+  </div>
+
+  <div class="card">
+    <h2><span class="bar"></span>我关注的股票 <span id="watchCount" style="color:var(--gold);font-size:13px;margin-left:6px"></span></h2>
+    <div class="sub">红涨绿跌 · 数据每15秒刷新 · 可填成本价自动算盈亏</div>
+    <div id="watchList" class="watch-grid"></div>
+  </div>
+</div>
+
 <div class="disclaimer">
   <b>⚠️ 务必阅读：</b>本看板是公开数据的整理与可视化工具，所有"操作倾向""星级""建议"均由程序依据当日资金数据自动生成，<b>仅供学习参考，不构成任何投资建议，不承诺任何收益</b>。股市有风险，"妖股"波动尤其剧烈，追高可能大幅亏损。任何决策请独立思考、控制仓位、设好止损，据此操作风险自担。数据来源：腾讯财经、东方财富公开接口，行情每15秒自动刷新，资金流数据为交易日盘后更新。
 </div>
@@ -416,6 +491,34 @@ const ETFs=[
   {code:'sh588000',name:'科创50ETF',full:'科创50ETF华夏',idx:'科创50'},
   {code:'sz159919',name:'沪深300ETF嘉实',full:'沪深300ETF嘉实',idx:'沪深300'}
 ];
+/* ===== 我的自选股（存本机浏览器 localStorage）===== */
+const WATCH_STORE='etf_my_watch_v1', PUSH_COOL='etf_push_cool_v1';
+let watchlist=loadWatchlist();
+function loadWatchlist(){try{const s=localStorage.getItem(WATCH_STORE);return s?JSON.parse(s):[];}catch(e){return [];}}
+function saveWatchlist(){try{localStorage.setItem(WATCH_STORE,JSON.stringify(watchlist));}catch(e){toast('保存失败：浏览器存储不可用');}}
+function normCode(s){s=s.trim();if(/^\d{6}$/.test(s))return (s[0]==='6'||s[0]==='9'?'sh':'sz')+s;if(/^(sh|sz)\d{6}$/.test(s))return s;return null;}
+function addWatchStocks(){
+  const raw=$('#watchInput').value.trim();if(!raw){toast('请输入股票代码');return;}
+  const parts=raw.split(/[,，\s、;；]+/).filter(Boolean);let ok=0,dup=0,bad=0;
+  parts.forEach(p=>{
+    const code=normCode(p);
+    if(!code){bad++;return;}
+    if(watchlist.some(w=>w.code===code)){dup++;return;}
+    watchlist.push({code,cost:null});ok++;
+  });
+  saveWatchlist();$('#watchInput').value='';
+  if(ok){buildWatchScripts();renderWatch();}
+  toast(`成功添加 ${ok} 只${dup?'，'+dup+' 只已存在':''}${bad?'，'+bad+' 个代码无效':''}`);
+}
+function removeWatch(code){
+  watchlist=watchlist.filter(w=>w.code!==code);saveWatchlist();
+  delete quotes[code];renderWatch();toast('已移除关注');
+}
+function setWatchCost(code,el){
+  const w=watchlist.find(x=>x.code===code);if(!w)return;
+  const v=parseFloat(el.value);w.cost=isNaN(v)||v<=0?null:v;saveWatchlist();renderWatch();
+}
+
 // 当前份额（亿份）与规模（亿元），来自东财公开数据（近期快照）
 const SHARE_SNAP={
   '510300':{share:496.8,scale:2016},'510310':{share:269.8,scale:1064},
@@ -494,11 +597,31 @@ function marketStatus(){
   if(t>690&&t<780)return{txt:'午间休市',live:false,bj};
   return{txt:'已收盘',live:false,bj};
 }
+function allQuoteCodes(){
+  const codes=[...INDICES.map(i=>i.code),...ETFs.map(e=>e.code),
+    ...flow.stocks.map(s=>(s.c[0]==='6'?'sh':'sz')+s.c),...watchlist.map(w=>w.code)];
+  return [...new Set(codes)];
+}
+function buildWatchScripts(){
+  // 新增自选股后立即拉取其行情（不打断主刷新节奏）
+  const box=document.getElementById('qtbox');if(!box)return;
+  watchlist.forEach(c=>{if(quotes[c.code])return;
+    const s=document.createElement('script');try{s.charset='GBK';}catch(e){}
+    s.src=`https://qt.gtimg.cn/q=${c.code}&r=${Date.now()}`;s.onerror=()=>{};box.appendChild(s);
+  });
+  setTimeout(()=>{parseWatchQuotes();renderWatch();},900);
+}
+function parseWatchQuotes(){
+  watchlist.forEach(w=>{
+    const raw=window['v_'+w.code];if(!raw)return;const f=raw.split('~');if(f.length<33)return;
+    quotes[w.code]={name:f[1],price:parseFloat(f[3]),pct:parseFloat(f[32]),change:parseFloat(f[31]),
+      amount:parseFloat(f[37])||0,turnover:parseFloat(f[38])||0,ratio:parseFloat(f[49])||0,time:f[30]||''};
+  });
+}
 function fetchQuotes(){
   const old=document.getElementById('qtbox');if(old)old.remove();
   const box=document.createElement('div');box.id='qtbox';box.style.display='none';
-  const codes=[...INDICES.map(i=>i.code),...ETFs.map(e=>e.code),...flow.stocks.map(s=>(s.c[0]==='6'?'sh':'sz')+s.c)];
-  [...new Set(codes)].forEach(c=>{
+  allQuoteCodes().forEach(c=>{
     const s=document.createElement('script');try{s.charset='GBK';}catch(e){}
     s.src=`https://qt.gtimg.cn/q=${c}&r=${Date.now()}`;s.onerror=()=>{};box.appendChild(s);
   });
@@ -507,11 +630,10 @@ function fetchQuotes(){
 }
 function parseQuotes(){
   let n=0;
-  const codes=[...INDICES.map(i=>i.code),...ETFs.map(e=>e.code),...flow.stocks.map(s=>(s.c[0]==='6'?'sh':'sz')+s.c)];
-  [...new Set(codes)].forEach(c=>{
+  allQuoteCodes().forEach(c=>{
     const raw=window['v_'+c];if(!raw)return;const f=raw.split('~');if(f.length<33)return;
-    quotes[c]={price:parseFloat(f[3]),pct:parseFloat(f[32]),change:parseFloat(f[31]),
-      amount:parseFloat(f[37])||0,turnover:parseFloat(f[38])||0,time:f[30]||''};n++;
+    quotes[c]={name:f[1],price:parseFloat(f[3]),pct:parseFloat(f[32]),change:parseFloat(f[31]),
+      amount:parseFloat(f[37])||0,turnover:parseFloat(f[38])||0,ratio:parseFloat(f[49])||0,time:f[30]||''};n++;
   });
   if(n>0){
     const ts=quotes['sh000300']?.time||'';
@@ -523,7 +645,52 @@ function parseQuotes(){
       $('#dataDate').textContent=(d===today?'今天 ':'')+d.slice(4,6)+'/'+d.slice(6,8)+' '+tm.slice(0,2)+':'+tm.slice(2);
     }
     renderAll();
+    checkWatchAlerts();
   }
+}
+
+/* =========== 自选股放量检测 + 微信推送 =========== */
+const SCKEY='SCT476466TByE9ZoLkvkodW6xc9MrYBEVz';
+function pushWx(title,desp){
+  try{
+    fetch(`https://sctapi.ftqq.com/${SCKEY}.send`,{
+      method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'title='+encodeURIComponent(title)+'&desp='+encodeURIComponent(desp),mode:'cors'
+    }).then(r=>r.json()).then(j=>{if(j.code!==0)console.warn('推送返回',j);}).catch(e=>console.warn('推送失败',e));
+  }catch(e){}
+}
+function getCool(){try{return JSON.parse(localStorage.getItem(PUSH_COOL)||'{}');}catch(e){return {};}}
+function setCool(k,v){const c=getCool();c[k]=v;try{localStorage.setItem(PUSH_COOL,JSON.stringify(c));}catch(e){}}
+function checkWatchAlerts(){
+  if(!watchlist.length)return;
+  const st=marketStatus();if(!st.live)return; // 仅交易时段推送
+  const cool=getCool(),now=Date.now();
+  watchlist.forEach(w=>{
+    const q=quotes[w.code];if(!q)return;
+    const ratio=q.ratio||0,pct=q.pct||0,nm=q.name||w.code;
+    const key=w.code,last=cool[key]||0;
+    const up=ratio>=2&&pct>=2, down=ratio>=2&&pct<=-2;
+    if(!up&&!down)return;
+    if(now-last<3600*1000)return; // 60分钟冷却
+    if(up){
+      setCool(key,now);
+      pushWx(`🚀 自选放量走强 · ${nm}`,
+        `### ${nm} 放量异动\n\n- 现价：**${q.price.toFixed(2)}**  涨跌：**<font color="#ff4d5e">+${pct.toFixed(2)}%</font>**\n- 量比：**${ratio.toFixed(2)}**（成交量是近5日同期的${ratio.toFixed(1)}倍）\n- 换手：${(q.turnover||0).toFixed(1)}%  成交额：${((q.amount||0)/1e4).toFixed(1)}亿\n`+
+        (w.cost?`- 你的成本：${w.cost.toFixed(2)}  浮盈亏：**<font color="${q.price>=w.cost?'#ff4d5e':'#22c55e'}">${((q.price-w.cost)/w.cost*100).toFixed(1)}%</font>**\n`:'')+
+        `\n> 你关注的股票放量走强，资金明显活跃。**可关注，但别盲目追高**——放量也可能是拉高出货。\n\n*${new Date().toLocaleTimeString('zh-CN',{hour12:false})} 自动盯盘推送 · 仅供参考，不构成投资建议*`);
+    }else{
+      setCool(key,now);
+      pushWx(`⚠️ 自选放量下挫 · ${nm}`,
+        `### ${nm} 放量下跌\n\n- 现价：**${q.price.toFixed(2)}**  涨跌：**<font color="#22c55e">${pct.toFixed(2)}%</font>**\n- 量比：**${ratio.toFixed(2)}**  成交额：${((q.amount||0)/1e4).toFixed(1)}亿\n`+
+        (w.cost?`- 你的成本：${w.cost.toFixed(2)}  浮盈亏：**<font color="${q.price>=w.cost?'#ff4d5e':'#22c55e'}">${((q.price-w.cost)/w.cost*100).toFixed(1)}%</font>**\n`:'')+
+        `\n> 你关注的股票放量下跌，抛压较重。**留意风险，别急着补仓**。\n\n*${new Date().toLocaleTimeString('zh-CN',{hour12:false})} 自动盯盘推送 · 仅供参考，不构成投资建议*`);
+    }
+  });
+}
+function testPush(){
+  pushWx('✅ 自选股盯盘提醒测试',
+    `### 测试成功\n\n你的微信已经和网页盯盘连上了。以后交易日打开这个网页，你关注的股票一旦放量异动，就会收到这样的提醒。\n\n> 提醒是让你"去看一眼"，买卖决定还得你自己拿。\n\n*仅供参考，不构成投资建议*`);
+  toast('测试消息已发送，请查收微信');
 }
 
 /* =========== 实时刷新资金流（JSONP）=========== */
@@ -863,7 +1030,42 @@ function renderNation(){
     <b>给你的启发：</b>国家队在低位买、高位减，这个思路值得学。<b>市场大跌、宽基ETF份额猛增时，往往是相对好的布局点；市场大涨、份额缩水时，反而要谨慎。</b>跟着这个节奏做宽基ETF的定投，比追妖股稳得多。`;
 }
 
-function renderAll(){renderHome();renderETF();renderSector();renderStocks();renderLimit();renderNation();}
+/* =========== 渲染：我的自选股 =========== */
+function renderWatch(){
+  const box=$('#watchList');if(!box)return;
+  $('#watchCount').textContent=watchlist.length?`(${watchlist.length} 只)`:'';
+  if(!watchlist.length){
+    box.innerHTML='<div class="w-empty" style="grid-column:1/-1"><span class="big">⭐</span>还没有关注的股票<br>在上方输入股票代码添加，网页会帮你自动盯盘、放量提醒</div>';
+    return;
+  }
+  box.innerHTML=watchlist.map(w=>{
+    const q=quotes[w.code]||{};
+    const price=q.price||0,pct=q.pct||0,ratio=q.ratio||0,turn=q.turnover||0;
+    const nm=q.name||w.code;
+    const cls=pct>0?'up':pct<0?'down':'flat';
+    const hasData=!!q.price;
+    const alert=ratio>=2&&Math.abs(pct)>=2;
+    let tagCls='idle',tagTxt='成交平稳';
+    if(alert){tagCls=pct>0?'alert':'idle';tagTxt=pct>0?'🚀 放量走强':'⚠️ 放量下挫';}
+    else if(ratio>=1.5){tagCls='ok';tagTxt='👀 温和放量';}
+    let costHtml='';
+    if(w.cost){
+      const diff=(price-w.cost)/w.cost*100;
+      costHtml=`<div class="wcost">成本 ${w.cost.toFixed(2)} · 盈亏 <b class="${diff>=0?'up':'down'}">${diff>=0?'+':''}${diff.toFixed(1)}%</b></div>`;
+    }
+    return `<div class="wcard ${alert&&pct>0?'alert':''}">
+      <span class="del" onclick="removeWatch('${w.code}')" title="移除">×</span>
+      <div class="wn">${nm}</div><div class="wc">${w.code}</div>
+      <div class="wp"><span class="p ${cls}">${hasData?price.toFixed(2):'--'}</span><span class="c ${cls}">${hasData?(pct>0?'+':'')+pct.toFixed(2)+'%':'--'}</span></div>
+      <div class="wm"><div>量比<b>${hasData?ratio.toFixed(2):'--'}</b></div><div>换手<b>${hasData?turn.toFixed(1)+'%':'--'}</b></div><div>成交额<b>${hasData?(q.amount/1e4).toFixed(1)+'亿':'--'}</b></div></div>
+      <span class="wtag ${tagCls}">${tagTxt}</span>
+      ${costHtml}
+      <div class="wcost">成本价 <input type="number" step="0.01" placeholder="选填" value="${w.cost||''}" onchange="setWatchCost('${w.code}',this)" /> 元 · 填了自动算盈亏</div>
+    </div>`;
+  }).join('');
+}
+
+function renderAll(){renderHome();renderETF();renderSector();renderStocks();renderLimit();renderNation();renderWatch();}
 
 /* =========== 初始化 =========== */
 function init(){
@@ -876,7 +1078,11 @@ function init(){
   setInterval(fetchLimitUp,60000);
   setInterval(()=>{const s=marketStatus();$('#status').textContent=s.txt;$('#dot').classList.toggle('closed',!s.live);},30000);
   $('#refreshBtn').onclick=()=>{fetchQuotes();refreshFlow();fetchLimitUp();toast('数据已刷新');};
+  $('#watchAddBtn').onclick=addWatchStocks;
+  $('#watchInput').addEventListener('keydown',e=>{if(e.key==='Enter')addWatchStocks();});
+  $('#wxTestBtn').onclick=testPush;
   renderAll();
+  parseWatchQuotes();renderWatch();
 }
 init();
 </script>
