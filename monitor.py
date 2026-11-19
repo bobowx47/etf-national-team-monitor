@@ -40,7 +40,8 @@ IDX_PCT_MIN = 0.3       # 大盘涨跌幅度最小(%)
 STK_PCT_MIN = 2.0       # 个股涨跌幅度最小(%)
 COOL_MIN = 60           # 同一标的冷却时间(分钟)
 RATIO_STEP = 1.15       # 量比再放大15%可突破冷却提前推
-STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'state.json')
+# 去重状态存到用户主目录，确保任何执行环境都能读写、跨运行保持
+STATE_FILE = os.path.expanduser('~/.etf_monitor_state.json')
 
 BJ = timezone(timedelta(hours=8))
 
