@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>国家队持仓 ETF · 实时监测与走势研判（最新）</title>
+<style>
+:root{
+  --bg:#080c16;--bg2:#0d1424;--card:rgba(20,29,47,.78);--card-solid:#141d2f;
+  --bd:rgba(125,155,205,.15);--bd-strong:rgba(245,196,81,.35);
+  --gold:#f5c451;--gold2:#ffe6a8;--up:#ff4d5e;--down:#22c55e;--flat:#95a3ba;
+  --txt:#eaf0fa;--txt2:#95a4bd;--txt3:#63728c;--blue:#4d8bff;
+  --shadow:0 8px 32px rgba(0,0,0,.35);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,sans-serif;
+  background:radial-gradient(1200px 600px at 12% -5%,rgba(77,139,255,.10),transparent 60%),
+    radial-gradient(1000px 500px at 92% 0%,rgba(245,196,81,.08),transparent 55%),
+    linear-gradient(180deg,var(--bg),var(--bg2));background-attachment:fixed;
+  color:var(--txt);line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1460px;margin:0 auto;padding:22px 22px 60px}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+.up{color:var(--up)!important}.down{color:var(--down)!important}.flat{color:var(--flat)!important}
+
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;
+  padding:20px 26px;margin-bottom:20px;
+  background:linear-gradient(120deg,rgba(245,196,81,.10),rgba(20,29,47,.6) 45%);
+  border:1px solid var(--bd);border-radius:18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+header::before{content:"";position:absolute;top:0;left:0;width:100%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.7}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:52px;height:52px;border-radius:14px;flex:none;
+  background:linear-gradient(145deg,var(--gold),#c8901f);display:flex;align-items:center;
+  justify-content:center;font-size:26px;color:#1a1206;box-shadow:0 6px 18px rgba(245,196,81,.3)}
+.brand h1{font-size:22px;letter-spacing:.5px;font-weight:800}
+.brand h1 span{color:var(--gold)}
+.brand p{font-size:12.5px;color:var(--txt2);margin-top:2px}
+.hd-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.live{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt2);padding:8px 13px;
+  background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:30px;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--down);box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:pulse 1.8s infinite}
+.dot.closed{background:var(--flat);box-shadow:none;animation:none}
+@keyframes pulse{70%{box-shadow:0 0 0 9px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+.clock{font-size:13px;color:var(--txt);font-weight:600}
+.clock small{display:block;font-size:11px;color:var(--txt3);font-weight:400;text-align:right}
+.refresh-btn{border:1px solid var(--bd-strong);background:rgba(245,196,81,.1);color:var(--gold);
+  padding:9px 15px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap}
+.refresh-btn:hover{background:rgba(245,196,81,.2);transform:translateY(-1px)}
+
+.sec-title{display:flex;align-items:center;gap:10px;margin:26px 4px 14px;flex-wrap:wrap}
+.sec-title .bar{width:4px;height:18px;border-radius:3px;background:linear-gradient(180deg,var(--gold),#c8901f)}
+.sec-title h2{font-size:16.5px;font-weight:700;letter-spacing:.3px}
+.sec-title .tip{font-size:11.5px;color:var(--txt3);margin-left:auto}
+.newbadge{font-size:10px;background:linear-gradient(90deg,#ff4d5e,#ff8a3d);color:#fff;padding:2px 9px;border-radius:20px;font-weight:700;letter-spacing:.5px}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kpi{background:var(--card);border:1px solid var(--bd);border-radius:15px;padding:17px 18px;
+  box-shadow:var(--shadow);position:relative;overflow:hidden;transition:.2s}
+.kpi:hover{transform:translateY(-3px);border-color:var(--bd-strong)}
+.kpi .label{font-size:12px;color:var(--txt2);display:flex;align-items:center;gap:7px}
+.kpi .label .ic{font-size:15px}
+.kpi .val{font-size:27px;font-weight:800;margin:8px 0 3px;letter-spacing:.5px}
+.kpi .val small{font-size:14px;font-weight:600;color:var(--txt2)}
+.kpi .sub{font-size:11.5px;color:var(--txt3)}
+.kpi.gold .val{color:var(--gold)}
+.kpi .glow{position:absolute;right:-20px;top:-20px;width:90px;height:90px;border-radius:50%;
+  background:radial-gradient(circle,rgba(245,196,81,.15),transparent 70%)}
+
+.flow-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.flow{background:linear-gradient(150deg,rgba(255,77,94,.1),var(--card) 60%);
+  border:1px solid rgba(255,77,94,.22);border-radius:14px;padding:15px 16px;box-shadow:var(--shadow)}
+.flow .t{font-size:11.5px;color:var(--txt2)}
+.flow .v{font-size:24px;font-weight:800;color:var(--up);margin:7px 0 3px}
+.flow .v small{font-size:13px}
+.flow .d{font-size:11px;color:var(--txt3)}
+
+.idx-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.idx{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px 16px;
+  cursor:pointer;transition:.2s;position:relative;box-shadow:var(--shadow)}
+.idx:hover{transform:translateY(-2px);border-color:var(--bd-strong)}
+.idx.active{border-color:var(--gold);background:linear-gradient(145deg,rgba(245,196,81,.12),var(--card))}
+.idx.active::after{content:"";position:absolute;inset:-1px;border:1px solid var(--gold);border-radius:14px;opacity:.3;pointer-events:none}
+.idx .nm{font-size:13px;color:var(--txt2);display:flex;justify-content:space-between;align-items:center}
+.idx .nm .chip{font-size:10px;padding:1px 7px;border-radius:20px;background:rgba(245,196,81,.12);color:var(--gold)}
+.idx .nm .chip.no{background:rgba(120,140,175,.12);color:var(--txt3)}
+.idx .price{font-size:23px;font-weight:800;margin:6px 0 2px}
+.idx .row{display:flex;gap:12px;font-size:12px;font-weight:600}
+.idx .row span{color:var(--txt2);font-weight:400}
+.idx .amt{font-size:11px;color:var(--txt3);margin-top:6px}
+
+.panel{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow)}
+.panel-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.panel-hd h3{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px}
+.panel-hd h3 .d{width:7px;height:7px;border-radius:50%;background:var(--gold)}
+.seg{display:flex;gap:4px;background:rgba(255,255,255,.03);padding:3px;border-radius:9px;border:1px solid var(--bd)}
+.seg button{border:0;background:transparent;color:var(--txt2);font-size:11.5px;padding:5px 11px;border-radius:7px;cursor:pointer;transition:.15s}
+.seg button:hover{color:var(--txt)}
+.seg button.on{background:var(--gold);color:#1a1206;font-weight:700}
+#klineChart{width:100%;height:380px}
+.chart-fallback{height:380px;display:flex;align-items:center;justify-content:center;color:var(--txt3);font-size:13px}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+#pieChart,#barChart{width:100%;height:330px}
+
+.table-wrap{overflow-x:auto;border-radius:14px;border:1px solid var(--bd);background:var(--card);box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:960px}
+thead th{text-align:right;padding:12px 14px;font-size:11.5px;color:var(--txt2);font-weight:600;
+  background:rgba(255,255,255,.03);border-bottom:1px solid var(--bd);white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0}
+thead th:first-child,tbody td:first-child{text-align:left}
+thead th:hover{color:var(--gold)}
+thead th .arrow{font-size:9px;opacity:.5;margin-left:3px}
+tbody td{padding:11px 14px;text-align:right;border-bottom:1px solid rgba(125,155,205,.07);white-space:nowrap}
+tbody tr{transition:background .15s}
+tbody tr:hover{background:rgba(245,196,81,.05)}
+tbody tr:last-child td{border-bottom:0}
+.etf-name{font-weight:600;font-size:12.5px}
+.etf-code{font-size:10.5px;color:var(--txt3);margin-top:1px}
+.tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600}
+.tag.core{background:rgba(245,196,81,.14);color:var(--gold)}
+.tag.add{background:rgba(255,77,94,.13);color:var(--up)}
+.tag.hold{background:rgba(120,140,175,.14);color:var(--txt2)}
+.mv-bar{display:inline-flex;align-items:center;gap:7px;justify-content:flex-end}
+.mv-bar .track{width:46px;height:5px;border-radius:4px;background:rgba(255,255,255,.07);overflow:hidden}
+.mv-bar .fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),#c8901f)}
+
+.analysis-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:14px}
+.narrative{font-size:13px;line-height:1.9;color:var(--txt2)}
+.narrative b{color:var(--gold);font-weight:700}
+.narrative .hl{color:var(--txt);font-weight:600}
+.signal-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px dashed rgba(125,155,205,.12);font-size:12.5px}
+.signal-row:last-child{border-bottom:0}
+.signal-row .k{color:var(--txt2)}
+.signal-row .v{font-weight:700}
+.rank-list{display:flex;flex-direction:column;gap:7px;margin-top:4px}
+.rank-item{display:flex;align-items:center;gap:10px;font-size:12px}
+.rank-item .nm{width:66px;color:var(--txt2);flex:none}
+.rank-item .track{flex:1;height:16px;border-radius:5px;background:rgba(255,255,255,.04);position:relative;overflow:hidden}
+.rank-item .track::before{content:"";position:absolute;left:50%;top:0;height:100%;width:1px;background:rgba(255,255,255,.12)}
+.rank-item .fill{position:absolute;height:100%;top:0;border-radius:4px}
+.rank-item .fill.p{left:50%;background:linear-gradient(90deg,rgba(255,77,94,.5),var(--up))}
+.rank-item .fill.n{right:50%;background:linear-gradient(90deg,var(--down),rgba(34,197,94,.5))}
+.rank-item .pct{width:52px;text-align:right;font-weight:700;flex:none}
+
+.timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative}
+.timeline::before{content:"";position:absolute;top:15px;left:6%;right:6%;height:2px;background:linear-gradient(90deg,var(--gold),rgba(245,196,81,.15))}
+.tl-item{position:relative;text-align:center;padding:0 8px}
+.tl-dot{width:13px;height:13px;border-radius:50%;background:var(--gold);margin:9px auto 14px;position:relative;z-index:2;box-shadow:0 0 0 4px var(--bg2)}
+.tl-dot.hot{background:var(--up);box-shadow:0 0 0 4px var(--bg2),0 0 12px var(--up)}
+.tl-date{font-size:11px;color:var(--gold);font-weight:700}
+.tl-title{font-size:13px;font-weight:700;margin:5px 0}
+.tl-desc{font-size:11px;color:var(--txt3);line-height:1.6}
+
+.foot{margin-top:26px;padding:18px 22px;background:rgba(255,255,255,.02);border:1px solid var(--bd);border-radius:14px;font-size:11.5px;color:var(--txt3);line-height:1.8}
+.foot b{color:var(--txt2)}
+.disclaimer{margin-top:10px;padding-top:10px;border-top:1px solid var(--bd);color:#8a6a4a}
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--card-solid);border:1px solid var(--bd-strong);color:var(--txt);padding:11px 20px;
+  border-radius:10px;font-size:13px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s;z-index:99}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:1100px){
+  .kpis{grid-template-columns:repeat(2,1fr)}.idx-grid{grid-template-columns:repeat(2,1fr)}
+  .flow-grid{grid-template-columns:repeat(2,1fr)}
+  .two-col,.analysis-grid{grid-template-columns:1fr}
+  .timeline{grid-template-columns:repeat(3,1fr);gap:22px 0}.timeline::before{display:none}
+}
+@media(max-width:600px){
+  .wrap{padding:14px 12px 40px}.kpis{grid-template-columns:1fr 1fr;gap:10px}
+  .idx-grid{grid-template-columns:1fr 1fr;gap:9px}.flow-grid{grid-template-columns:1fr}
+  .kpi .val{font-size:22px}.brand h1{font-size:18px}header{padding:16px}#klineChart{height:320px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="logo">🇨🇳</div>
+      <div>
+        <h1>国家队持仓 <span>ETF</span> · 实时监测</h1>
+        <p>类平准基金动向追踪 · 宽基指数行情 · 市场走势研判看板 <span class="newbadge">最新数据</span></p>
+      </div>
+    </div>
+    <div class="hd-right">
+      <div class="live" id="liveBadge"><span class="dot" id="statusDot"></span><span id="marketStatus">正在连接行情…</span></div>
+      <div class="clock"><span id="clock" class="num">--:--:--</span><small id="refreshInfo">自动刷新 · 15秒</small></div>
+      <button class="refresh-btn" id="refreshBtn">⟳ 刷新行情</button>
+    </div>
+  </header>
+
+  <div class="sec-title"><span class="bar"></span><h2>核心概览</h2><span class="tip">持仓数据：2026年三季报（9月末）· 行情：实时</span></div>
+  <div class="kpis">
+    <div class="kpi gold"><div class="glow"></div>
+      <div class="label"><span class="ic">💰</span>国家队持仓总市值</div>
+      <div class="val num">4.38<small> 万亿元</small></div>
+      <div class="sub">2026三季报 · 较二季度末 +5069 亿</div>
+    </div>
+    <div class="kpi"><div class="glow"></div>
+      <div class="label"><span class="ic">🏛️</span>中央汇金体系持仓</div>
+      <div class="val num">3.56<small> 万亿</small></div>
+      <div class="sub">占国家队总持仓 81.14% · 绝对主力</div>
+    </div>
+    <div class="kpi"><div class="glow"></div>
+      <div class="label"><span class="ic">📊</span>汇金 ETF 持仓市值</div>
+      <div class="val num">1.16<small> 万亿</small></div>
+      <div class="sub">2026半年报 · 占 ETF 市场份额约 35%</div>
+    </div>
+    <div class="kpi"><div class="glow"></div>
+      <div class="label"><span class="ic">📈</span>沪深300 实时</div>
+      <div class="val num" id="kpiHs300">--<small> 点</small></div>
+      <div class="sub" id="kpiHs300Sub">加载中…</div>
+    </div>
+  </div>
+
+  <div class="sec-title"><span class="bar"></span><h2>最新资金流向 · 判断走势核心信号</h2><span class="tip">近一月（10/13–11/12）宽基 ETF 持续净流入 · Wind / 机构测算</span></div>
+  <div class="flow-grid">
+    <div class="flow"><div class="t">沪深300ETF 净流入</div><div class="v num">2100<small> 亿+</small></div><div class="d">近一月居首</div></div>
+    <div class="flow"><div class="t">科创50/创业板ETF</div><div class="v num">500<small> 亿+</small></div><div class="d">近一月各超500亿</div></div>
+    <div class="flow"><div class="t">宽基累计净买入</div><div class="v num">3500<small> 亿</small></div><div class="d">10/15–11/3</div></div>
+    <div class="flow"><div class="t">单日净流入峰值</div><div class="v num">800<small> 亿</small></div><div class="d">11/3 单日近800亿</div></div>
+    <div class="flow"><div class="t">下半年宽基净流入</div><div class="v num">4500<small> 亿+</small></div><div class="d">国家队为主体测算</div></div>
+  </div>
+
+  <div class="sec-title"><span class="bar"></span><h2>宽基指数实时行情</h2><span class="tip">点击指数卡片切换下方走势图 · <span style="color:var(--up)">红涨</span> / <span style="color:var(--down)">绿跌</span></span></div>
+  <div class="idx-grid" id="idxGrid"></div>
+
+  <div class="sec-title"><span class="bar"></span><h2>指数走势图</h2><span class="tip">日K线 + 成交量 · 数据来源：新浪财经</span></div>
+  <div class="panel">
+    <div class="panel-hd">
+      <h3><span class="d"></span><span id="chartTitle">沪深300 · 走势</span></h3>
+      <div class="seg" id="rangeSeg">
+        <button data-days="20">20日</button><button data-days="60" class="on">60日</button><button data-days="120">120日</button>
+      </div>
+    </div>
+    <div id="klineChart"><div class="chart-fallback">正在加载图表组件…</div></div>
+  </div>
+
+  <div class="sec-title"><span class="bar"></span><h2>国家队持仓结构与最新规模</h2><span class="tip">持仓结构：2026三季报 · ETF规模：2026-10-14</span></div>
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-hd"><h3><span class="d"></span>国家队持仓结构（2026三季报）</h3></div>
+      <div id="pieChart"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-hd"><h3><span class="d"></span>沪深300ETF 最新规模（亿元）</h3></div>
+      <div id="barChart"></div>
+    </div>
+  </div>
+
+  <div class="sec-title"><span class="bar"></span><h2>国家队持仓 ETF 最新行情</h2><span class="tip">规模为 2026-10-14 最新数据 · 行情实时刷新 · 点击表头排序</span></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th data-sort="name">ETF 名称 / 代码</th>
+        <th data-sort="index">跟踪指数</th>
+        <th data-sort="price">最新价<span class="arrow">↕</span></th>
+        <th data-sort="pct">涨跌幅<span class="arrow">↕</span></th>
+        <th data-sort="amount">成交额(亿)<span class="arrow">↕</span></th>
+        <th data-sort="turnover">换手率<span class="arrow">↕</span></th>
+        <th data-sort="mv">最新规模(亿)<span class="arrow">↕</span></th>
+        <th data-sort="signal">持仓信号</th>
+      </tr></thead>
+      <tbody id="etfBody"></tbody>
+    </table>
+  </div>
+
+  <div class="sec-title"><span class="bar"></span><h2>市场走势研判</h2><span class="tip">结合实时行情与最新资金流向 · 仅供参考，不构成投资建议</span></div>
+  <div class="analysis-grid">
+    <div class="panel">
+      <div class="panel-hd"><h3><span class="d"></span>盘面解读</h3></div>
+      <div class="narrative" id="narrative">正在根据实时行情生成研判…</div>
+    </div>
+    <div class="panel">
+      <div class="panel-hd"><h3><span class="d"></span>风格与强弱</h3></div>
+      <div class="signal-row"><span class="k">大盘（300/50 均值）</span><span class="v num" id="sigBig">--</span></div>
+      <div class="signal-row"><span class="k">中小盘（500/1000 均值）</span><span class="v num" id="sigSmall">--</span></div>
+      <div class="signal-row"><span class="k">成长（创业板/科创50）</span><span class="v num" id="sigGrowth">--</span></div>
+      <div class="signal-row"><span class="k">国家队重仓指数均值</span><span class="v num" id="sigNation">--</span></div>
+      <div class="signal-row"><span class="k">风格倾向</span><span class="v" id="sigStyle" style="color:var(--gold)">--</span></div>
+      <div class="rank-list" id="rankList"></div>
+    </div>
+  </div>
+
+  <div class="sec-title"><span class="bar"></span><h2>国家队 ETF 动向时间线</h2><span class="tip">类平准基金逆周期调节轨迹 · 更新至 2026年11月</span></div>
+  <div class="panel">
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">2013 / 2015</div><div class="tl-title">实践探索</div><div class="tl-desc">汇金现身华泰柏瑞沪深300ETF持有人名单，在极端行情中买入 ETF</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">2025 下半年</div><div class="tl-title">大举增持</div><div class="tl-desc">加大宽基增持力度，年末持仓市值创新高，明确"类平准基金"定位</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">2026 一季度</div><div class="tl-title">高位减持</div><div class="tl-desc">市场高位逆周期减持宽基，沪深300ETF 份额大幅缩水</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">2026 二季度</div><div class="tl-title">再度出手</div><div class="tl-desc">4月市场波动，两日增持超千亿；6月末 ETF 持仓达 1.16 万亿</div></div>
+      <div class="tl-item"><div class="tl-dot hot"></div><div class="tl-date">2026 10–11月</div><div class="tl-title">持续净流入</div><div class="tl-desc">三季报持仓 4.38 万亿；近一月宽基 ETF 净流入超 3500 亿托底</div></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div><b>数据来源说明：</b>实时行情来自腾讯财经 / 新浪财经公开接口，交易时段每 15 秒自动刷新（非交易时段显示最近收盘数据）；历史 K 线来自新浪财经。<b>持仓数据为截止今日最新的公开口径</b>：总量采用 2026 年三季报（9月末，Wind 统计口径，国家队合计 4.38 万亿、汇金体系 3.56 万亿）；ETF 持仓市值采用 2026 年半年报（6月末，汇金主要 ETF 持仓 11624.9 亿元）；ETF 最新规模为 2026-10-14 数据；资金流向为 10月中旬–11月中旬 Wind 及机构测算。ETF 十大持有人明细按法规仅在年报、半年报披露，故持仓明细的更新频率为半年。</div>
+    <div class="disclaimer"><b>风险提示：</b>本看板为信息汇总与可视化工具，研判文字由程序依据当日涨跌数据自动生成，不构成任何投资建议。ETF 及指数投资有风险，请独立判断、理性决策，据此操作风险自担。</div>
+  </div>
+
+</div>
+<div id="toast"></div>
+
+<script>
+const INDICES = [
+  {code:'sh000001', name:'上证指数', nation:true},
+  {code:'sz399001', name:'深证成指', nation:false},
+  {code:'sz399006', name:'创业板指', nation:true},
+  {code:'sh000688', name:'科创50',   nation:true},
+  {code:'sh000300', name:'沪深300',  nation:true},
+  {code:'sh000016', name:'上证50',   nation:true},
+  {code:'sh000905', name:'中证500',  nation:true},
+  {code:'sh000852', name:'中证1000', nation:true},
+];
+
+// mv: 2026-10-14 最新ETF规模(亿元)，无数据的标注 null
+const ETFs = [
+  {code:'sh510300', name:'沪深300ETF华泰柏瑞', index:'沪深300', mv:1058.96, signal:'core', signalTxt:'核心重仓'},
+  {code:'sh510310', name:'沪深300ETF易方达',   index:'沪深300', mv:506.62,  signal:'core', signalTxt:'核心重仓'},
+  {code:'sh510330', name:'沪深300ETF华夏',     index:'沪深300', mv:388.44,  signal:'core', signalTxt:'核心重仓'},
+  {code:'sz159919', name:'沪深300ETF嘉实',     index:'沪深300', mv:306.22,  signal:'core', signalTxt:'核心重仓'},
+  {code:'sh510050', name:'上证50ETF华夏',      index:'上证50',  mv:null,    signal:'core', signalTxt:'核心重仓'},
+  {code:'sh515330', name:'沪深300ETF天弘',     index:'沪深300', mv:86.82,   signal:'add',  signalTxt:'获增持'},
+  {code:'sh512100', name:'中证1000ETF南方',    index:'中证1000',mv:null,    signal:'add',  signalTxt:'重点增持'},
+  {code:'sh510500', name:'中证500ETF南方',     index:'中证500', mv:null,    signal:'add',  signalTxt:'重点增持'},
+  {code:'sz159915', name:'创业板ETF易方达',    index:'创业板指',mv:null,    signal:'add',  signalTxt:'获增持'},
+  {code:'sh588000', name:'科创50ETF华夏',      index:'科创50',  mv:null,    signal:'add',  signalTxt:'获增持'},
+  {code:'sz159845', name:'中证1000ETF华夏',    index:'中证1000',mv:null,    signal:'add',  signalTxt:'获增持'},
+  {code:'sz159901', name:'深证100ETF易方达',   index:'深证100', mv:null,    signal:'hold', signalTxt:'持续持有'},
+  {code:'sh510180', name:'上证180ETF华安',     index:'上证180', mv:null,    signal:'hold', signalTxt:'持续持有'},
+  {code:'sh515800', name:'中证800ETF汇添富',   index:'中证800', mv:null,    signal:'hold', signalTxt:'持续持有'},
+];
+
+const PIE_DATA = [
+  {name:'中央汇金体系', value:3.56},
+  {name:'社保基金', value:0.5571},
+  {name:'国新/诚通/证金等', value:0.2629},
+];
+
+// 沪深300ETF最新规模柱状图
+const BAR_DATA = [
+  {name:'华泰柏瑞', value:1058.96},
+  {name:'易方达', value:506.62},
+  {name:'华夏', value:388.44},
+  {name:'嘉实', value:306.22},
+  {name:'天弘', value:86.82},
+];
+
+const ALL_CODES = [...INDICES.map(i=>i.code), ...ETFs.map(e=>e.code)];
+let quotes={}, currentIndex='sh000300', currentDays=60, sortKey='mv', sortAsc=false, countdown=15, echartsReady=false, klineCache={};
+
+const $ = s => document.querySelector(s);
+const fmt = (v,d=2) => (v==null||isNaN(v)) ? '--' : Number(v).toFixed(d);
+function cls(v){ return v>0?'up':v<0?'down':'flat'; }
+function sign(v,d=2){ return (v>0?'+':'')+fmt(v,d); }
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2200); }
+
+function marketStatus(){
+  const now=new Date();
+  const bj=new Date(now.getTime()+(now.getTimezoneOffset()+480)*60000);
+  const day=bj.getDay(), h=bj.getHours(), m=bj.getMinutes(), t=h*60+m;
+  const isWorkday=day>=1&&day<=5;
+  const isSession=isWorkday&&((t>=570&&t<=690)||(t>=780&&t<=900));
+  let label,live;
+  if(!isWorkday){label='休市中 · 非交易日';live=false;}
+  else if(isSession){label='交易中 · 实时行情';live=true;}
+  else if(t<570){label='待开盘 · 显示昨收';live=false;}
+  else if(t>690&&t<780){label='午间休市';live=false;}
+  else {label='已收盘 · 最近行情';live=false;}
+  return {label,live,bj};
+}
+function tickClock(){
+  const {label,live,bj}=marketStatus();
+  const p=n=>String(n).padStart(2,'0');
+  $('#clock').textContent=`${p(bj.getHours())}:${p(bj.getMinutes())}:${p(bj.getSeconds())}`;
+  $('#marketStatus').textContent=label;
+  $('#statusDot').classList.toggle('closed',!live);
+  $('#refreshInfo').textContent=live?`自动刷新 · ${countdown}s`:'非交易时段 · 显示为最近收盘数据';
+}
+
+function fetchQuotes(){
+  const old=document.getElementById('qtScripts'); if(old) old.remove();
+  const box=document.createElement('div'); box.id='qtScripts'; box.style.display='none';
+  ALL_CODES.forEach(code=>{
+    const s=document.createElement('script');
+    try{ s.charset='GBK'; }catch(e){}
+    s.src=`https://qt.gtimg.cn/q=${code}&r=${Date.now()}`;
+    s.onerror=()=>{}; box.appendChild(s);
+  });
+  document.body.appendChild(box);
+  setTimeout(parseQuotes,900);
+}
+function parseQuotes(){
+  let n=0;
+  ALL_CODES.forEach(code=>{
+    const raw=window['v_'+code]; if(!raw) return;
+    const f=raw.split('~'); if(f.length<33) return;
+    quotes[code]={price:parseFloat(f[3]),prev:parseFloat(f[4]),open:parseFloat(f[5]),
+      change:parseFloat(f[31]),pct:parseFloat(f[32]),high:parseFloat(f[33]),low:parseFloat(f[34]),
+      amount:parseFloat(f[37])||0,turnover:parseFloat(f[38])||0,time:f[30]||''};
+    n++;
+  });
+  if(n>0){ renderAll(); countdown=15; }
+  else { $('#marketStatus').textContent='行情连接失败 · 点击刷新重试'; }
+}
+
+function renderIndices(){
+  const g=$('#idxGrid'); g.innerHTML='';
+  INDICES.forEach(it=>{
+    const q=quotes[it.code]||{};
+    const el=document.createElement('div');
+    el.className='idx'+(it.code===currentIndex?' active':'');
+    el.onclick=()=>{ currentIndex=it.code; renderIndices(); loadKline(); };
+    el.innerHTML=`
+      <div class="nm">${it.name}<span class="chip${it.nation?'':' no'}">${it.nation?'国家队持仓':'参考'}</span></div>
+      <div class="price num ${cls(q.pct)}">${fmt(q.price)}</div>
+      <div class="row num"><span>涨跌</span><b class="${cls(q.change)}">${sign(q.change)}</b><b class="${cls(q.pct)}">${sign(q.pct)}%</b></div>
+      <div class="amt num">成交额 ${(q.amount/10000||0).toFixed(0)} 亿</div>`;
+    g.appendChild(el);
+  });
+  const hs=quotes['sh000300']||{};
+  if(hs.price){ $('#kpiHs300').innerHTML=`${fmt(hs.price)}<small> 点</small>`; $('#kpiHs300').className='val num '+cls(hs.pct);
+    $('#kpiHs300Sub').innerHTML=`今日 <b class="${cls(hs.pct)}">${sign(hs.pct)}%</b> · ${sign(hs.change)} 点`; }
+}
+
+function renderTable(){
+  const rows=ETFs.map(e=>({...e, ...(quotes[e.code]||{})}));
+  const maxMv=Math.max(...ETFs.map(e=>e.mv||0));
+  rows.sort((a,b)=>{
+    let x=a[sortKey], y=b[sortKey];
+    if(sortKey==='name'||sortKey==='index'||sortKey==='signal'){ x=String(x||''); y=String(y||''); return sortAsc?x.localeCompare(y):y.localeCompare(x); }
+    x=(x==null||isNaN(x))?-1e12:x; y=(y==null||isNaN(y))?-1e12:y;
+    return sortAsc?x-y:y-x;
+  });
+  const tagCls={core:'core',add:'add',hold:'hold'};
+  $('#etfBody').innerHTML=rows.map(r=>{
+    const mvCell = r.mv!=null
+      ? `<div class="mv-bar num"><span>${fmt(r.mv,0)}</span><span class="track"><span class="fill" style="width:${(r.mv/maxMv*100).toFixed(0)}%"></span></span></div>`
+      : `<span style="color:var(--txt3)">—</span>`;
+    return `<tr>
+      <td><div class="etf-name">${r.name}</div><div class="etf-code num">${r.code.slice(2)}</div></td>
+      <td style="color:var(--txt2)">${r.index}</td>
+      <td class="num ${cls(r.pct)}">${fmt(r.price,3)}</td>
+      <td class="num ${cls(r.pct)}">${sign(r.pct)}%</td>
+      <td class="num">${(r.amount/10000||0).toFixed(1)}</td>
+      <td class="num">${r.turnover?fmt(r.turnover)+'%':'—'}</td>
+      <td>${mvCell}</td>
+      <td><span class="tag ${tagCls[r.signal]}">${r.signalTxt}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderAnalysis(){
+  const g=c=>quotes[c]?.pct||0;
+  const big=(g('sh000300')+g('sh000016'))/2;
+  const small=(g('sh000905')+g('sh000852'))/2;
+  const growth=(g('sz399006')+g('sh000688'))/2;
+  const nationIdx=INDICES.filter(i=>i.nation).map(i=>g(i.code));
+  const nationAvg=nationIdx.reduce((a,b)=>a+b,0)/nationIdx.length;
+  $('#sigBig').textContent=sign(big)+'%'; $('#sigBig').className='v num '+cls(big);
+  $('#sigSmall').textContent=sign(small)+'%'; $('#sigSmall').className='v num '+cls(small);
+  $('#sigGrowth').textContent=sign(growth)+'%'; $('#sigGrowth').className='v num '+cls(growth);
+  $('#sigNation').textContent=sign(nationAvg)+'%'; $('#sigNation').className='v num '+cls(nationAvg);
+  let styleTxt='';
+  if(big>small+0.3) styleTxt='大盘蓝筹占优'; else if(small>big+0.3) styleTxt='中小盘占优'; else styleTxt='大小盘均衡';
+  if(growth>big+0.5) styleTxt+=' · 成长领涨'; else if(big>growth+0.5) styleTxt+=' · 价值抗跌';
+  $('#sigStyle').textContent=styleTxt;
+  const ranked=[...INDICES].map(i=>({name:i.name.replace('指数',''),pct:g(i.code)})).sort((a,b)=>b.pct-a.pct);
+  const mx=Math.max(1.5,...ranked.map(r=>Math.abs(r.pct)));
+  $('#rankList').innerHTML=ranked.map(r=>{
+    const w=Math.min(50,Math.abs(r.pct)/mx*50);
+    return `<div class="rank-item"><span class="nm">${r.name}</span>
+      <span class="track"><span class="fill ${r.pct>=0?'p':'n'}" style="width:${w}%"></span></span>
+      <span class="pct ${cls(r.pct)}">${sign(r.pct)}%</span></div>`;
+  }).join('');
+  const dir=pct=>pct>0.15?'上涨':pct<-0.15?'下跌':'基本持平';
+  const tone=nationAvg>0.3?'偏强':nationAvg<-0.3?'偏弱':'震荡整理';
+  const upCount=INDICES.filter(i=>g(i.code)>0).length;
+  let html='';
+  html+=`今日 8 大宽基指数中，有 <span class="hl">${upCount}</span> 只上涨。沪深300 <b class="${cls(g('sh000300'))}">${sign(g('sh000300'))}%</b>，上证50 <b class="${cls(g('sh000016'))}">${sign(g('sh000016'))}%</b>；中证500 <b class="${cls(g('sh000905'))}">${sign(g('sh000905'))}%</b>，中证1000 <b class="${cls(g('sh000852'))}">${sign(g('sh000852'))}%</b>。`;
+  html+=`<br><br>从风格看，大盘蓝筹整体${dir(big)}（均值 <span class="${cls(big)}">${sign(big)}%</span>），中小盘${dir(small)}（均值 <span class="${cls(small)}">${sign(small)}%</span>），成长板块${dir(growth)}（均值 <span class="${cls(growth)}">${sign(growth)}%</span>），呈现 <span class="hl">${styleTxt}</span> 格局。`;
+  html+=`<br><br><b>资金面（最新）：</b>近一月沪深300ETF 净流入超 2100 亿居首，科创50/创业板 ETF 各超 500 亿；10/15–11/3 宽基累计净买入约 3500 亿。三季报国家队持仓 4.38 万亿、汇金体系 3.56 万亿（占 81%）。资金持续借道宽基 ETF 托底，是当前市场的重要支撑力量。`;
+  html+=`<br><br><span style="color:var(--txt3)">提示：类平准基金在市场大幅波动时通过宽基 ETF 逆周期调节。可重点观察宽基 ETF 的成交额异动、份额变化与指数趋势的配合，作为判断市场底部/顶部区域的辅助信号。以上为数据描述，非投资建议。</span>`;
+  $('#narrative').innerHTML=html;
+}
+function renderAll(){ renderIndices(); renderTable(); renderAnalysis(); }
+
+function fetchKline(code, days, cb){
+  const cname='__k'+Math.random().toString(36).slice(2);
+  window[cname]=function(data){ try{cb(data||[]);}catch(e){} try{delete window[cname];}catch(e){} };
+  const s=document.createElement('script');
+  s.src=`https://quotes.sina.cn/cn/api/jsonp_v2.php/${cname}/CN_MarketDataService.getKLineData?symbol=${code}&scale=240&ma=no&datalen=${days}&r=${Date.now()}`;
+  s.onerror=()=>cb([]); document.head.appendChild(s);
+  setTimeout(()=>{ if(window[cname]){ cb([]); try{delete window[cname];}catch(e){} } },6000);
+}
+function loadKline(){
+  const key=currentIndex+'_'+currentDays;
+  const name=INDICES.find(i=>i.code===currentIndex)?.name||'';
+  $('#chartTitle').textContent=`${name} · 近${currentDays}交易日走势`;
+  if(klineCache[key]){ drawKline(klineCache[key]); return; }
+  $('#klineChart').innerHTML='<div class="chart-fallback">正在加载走势数据…</div>';
+  fetchKline(currentIndex, currentDays, data=>{ klineCache[key]=data; drawKline(data); });
+}
+function drawKline(data){
+  const el=$('#klineChart');
+  if(!data.length){ el.innerHTML='<div class="chart-fallback">走势数据暂时无法加载，请稍后刷新重试</div>'; return; }
+  if(!echartsReady){ drawFallbackLine(el,data); return; }
+  const days=data.map(d=>d.day.slice(5));
+  const ohlc=data.map(d=>[+d.open,+d.close,+d.low,+d.high]);
+  const vols=data.map(d=>({v:+d.volume/1e8,c:+d.close>=+d.open?1:-1}));
+  const upC='#ff4d5e',dnC='#22c55e';
+  const opt={backgroundColor:'transparent',animation:true,
+    grid:[{left:52,right:18,top:18,height:'58%'},{left:52,right:18,top:'72%',height:'16%'}],
+    tooltip:{trigger:'axis',axisPointer:{type:'cross'},backgroundColor:'#141d2f',borderColor:'#f5c451',textStyle:{color:'#eaf0fa',fontSize:12},
+      formatter:p=>{const k=p.find(x=>x.seriesType==='candlestick');const v=p.find(x=>x.seriesName==='成交量');if(!k)return'';const d=k.data;return `${k.axisValue}<br/>开 ${d[1]}　高 ${d[4]}<br/>低 ${d[3]}　收 ${d[2]}<br/>成交量 ${v?v.data.toFixed(2):''} 亿手`;}},
+    xAxis:[{type:'category',data:days,axisLine:{lineStyle:{color:'#3a4a66'}},axisLabel:{color:'#7d8ca5',fontSize:10},splitLine:{show:false}},
+      {type:'category',data:days,gridIndex:1,axisLabel:{show:false},axisLine:{lineStyle:{color:'#3a4a66'}}}],
+    yAxis:[{scale:true,axisLine:{show:false},axisLabel:{color:'#7d8ca5',fontSize:10},splitLine:{lineStyle:{color:'rgba(125,155,205,.08)'}}},
+      {scale:true,gridIndex:1,axisLine:{show:false},axisLabel:{color:'#7d8ca5',fontSize:9},splitLine:{show:false}}],
+    dataZoom:[{type:'inside',xAxisIndex:[0,1],start:0,end:100}],
+    series:[
+      {name:'日K',type:'candlestick',data:ohlc,itemStyle:{color:upC,color0:dnC,borderColor:upC,borderColor0:dnC}},
+      {name:'MA5',type:'line',data:ma(data,5),smooth:true,symbol:'none',lineStyle:{width:1,color:'#f5c451',opacity:.8}},
+      {name:'MA10',type:'line',data:ma(data,10),smooth:true,symbol:'none',lineStyle:{width:1,color:'#4d8bff',opacity:.8}},
+      {name:'MA20',type:'line',data:ma(data,20),smooth:true,symbol:'none',lineStyle:{width:1,color:'#c084fc',opacity:.8}},
+      {name:'成交量',type:'bar',xAxisIndex:1,yAxisIndex:1,data:vols.map(v=>({value:v.v,itemStyle:{color:v.c>0?'rgba(255,77,94,.55)':'rgba(34,197,94,.55)'}}))}
+    ]};
+  el.innerHTML=''; const chart=echarts.init(el); chart.setOption(opt);
+  window.addEventListener('resize',()=>chart.resize());
+}
+function ma(data,n){ return data.map((_,i)=>{ if(i<n-1)return '-'; let s=0; for(let j=0;j<n;j++)s+=+data[i-j].close; return +(s/n).toFixed(2); }); }
+function drawFallbackLine(el,data){
+  const closes=data.map(d=>+d.close),mx=Math.max(...closes),mn=Math.min(...closes),rg=mx-mn||1;
+  const W=el.clientWidth||800,H=360,pad=30;
+  const pts=closes.map((c,i)=>`${pad+i*(W-2*pad)/(closes.length-1)},${H-pad-(c-mn)/rg*(H-2*pad)}`).join(' ');
+  const last=closes[closes.length-1],first=closes[0],color=last>=first?'#ff4d5e':'#22c55e';
+  el.innerHTML=`<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block">
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2"/>
+    <text x="${pad}" y="20" fill="#95a4bd" font-size="12">${first} → ${last}（简化走势图）</text></svg>`;
+}
+
+function drawHoldings(){
+  if(!echartsReady) return;
+  const pie=echarts.init($('#pieChart'));
+  pie.setOption({backgroundColor:'transparent',
+    tooltip:{trigger:'item',backgroundColor:'#141d2f',borderColor:'#f5c451',textStyle:{color:'#eaf0fa',fontSize:12},formatter:p=>`${p.name}<br/>${fmt(p.value,4)} 万亿元 (${p.percent}%)`},
+    legend:{bottom:0,left:'center',textStyle:{color:'#95a4bd',fontSize:10},itemWidth:10,itemHeight:10},
+    series:[{type:'pie',radius:['42%','68%'],center:['50%','44%'],itemStyle:{borderColor:'#0d1424',borderWidth:2},
+      label:{show:true,color:'#eaf0fa',fontSize:10,formatter:'{d}%'},
+      data:PIE_DATA.map((d,i)=>({...d,itemStyle:{color:['#f5c451','#4d8bff','#ff7a45'][i]}}))}]});
+  const bar=echarts.init($('#barChart'));
+  bar.setOption({backgroundColor:'transparent',
+    tooltip:{trigger:'axis',axisPointer:{type:'shadow'},backgroundColor:'#141d2f',borderColor:'#f5c451',textStyle:{color:'#eaf0fa',fontSize:12},formatter:p=>`${p[0].name}沪深300ETF<br/>${p[0].value} 亿元`},
+    grid:{left:70,right:60,top:10,bottom:20},
+    xAxis:{type:'value',axisLabel:{color:'#7d8ca5',fontSize:10},splitLine:{lineStyle:{color:'rgba(125,155,205,.08)'}}},
+    yAxis:{type:'category',data:BAR_DATA.map(d=>d.name),axisLabel:{color:'#95a4bd',fontSize:10},axisLine:{show:false}},
+    series:[{type:'bar',data:BAR_DATA.map(d=>d.value),barWidth:'55%',
+      label:{show:true,position:'right',color:'#f5c451',fontSize:10,formatter:'{c}'},
+      itemStyle:{borderRadius:[0,5,5,0],color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'#8a6415'},{offset:1,color:'#f5c451'}])}}]});
+  window.addEventListener('resize',()=>{pie.resize();bar.resize();});
+}
+
+function loadECharts(cb){
+  if(window.echarts){cb(true);return;}
+  const urls=['https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js',
+    'https://unpkg.com/echarts@5.5.1/dist/echarts.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.1/echarts.min.js',
+    'https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/echarts/5.4.1/echarts.min.js'];
+  let i=0;
+  (function next(){ if(i>=urls.length){cb(false);return;}
+    const s=document.createElement('script'); s.src=urls[i++]; s.onload=()=>cb(true); s.onerror=next; document.head.appendChild(s); })();
+}
+
+$('#rangeSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
+  document.querySelectorAll('#rangeSeg button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); currentDays=+b.dataset.days; loadKline(); });
+document.querySelectorAll('thead th').forEach(th=>{ th.addEventListener('click',()=>{
+  const k=th.dataset.sort; if(!k)return;
+  if(sortKey===k) sortAsc=!sortAsc; else {sortKey=k;sortAsc=false;} renderTable(); }); });
+$('#refreshBtn').addEventListener('click',()=>{ fetchQuotes(); toast('行情已刷新'); });
+
+function init(){
+  tickClock(); setInterval(tickClock,1000);
+  setInterval(()=>{ const {live}=marketStatus(); if(live){ countdown--; if(countdown<=0){ fetchQuotes(); countdown=15; } } },1000);
+  renderIndices(); renderTable(); fetchQuotes();
+  loadECharts(ok=>{ echartsReady=ok;
+    if(ok){ drawHoldings(); loadKline(); }
+    else { $('#klineChart').innerHTML='<div class="chart-fallback">图表组件加载失败，走势图以简化模式显示</div>'; loadKline(); } });
+}
+init();
+</script>
+</body>
+</html>
