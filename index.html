@@ -222,6 +222,33 @@ tbody tr:hover{background:rgba(245,196,81,.04)}
 .wxbar button{margin-left:auto;border:1px solid rgba(34,197,94,.35);background:rgba(34,197,94,.1);
   color:#4ade80;padding:7px 13px;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer}
 .wxbar button:hover{background:rgba(34,197,94,.2)}
+/* 隐私说明 */
+.privacy-note{background:rgba(77,139,255,.08);border:1px solid rgba(77,139,255,.25);border-radius:11px;
+  padding:12px 15px;margin-bottom:14px;font-size:12px;line-height:1.9;color:var(--txt2)}
+.privacy-note b{color:var(--blue)}
+/* SendKey 配置 */
+.sckey-row{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:8px}
+.sckey-row input{flex:1;min-width:220px;background:var(--card2);border:1px solid var(--bd);color:var(--gold);
+  padding:11px 13px;border-radius:10px;font-size:13px;outline:none;font-family:monospace}
+.sckey-row input:focus{border-color:rgba(245,196,81,.45)}
+.sckey-row input::placeholder{color:var(--txt3);font-family:inherit}
+.sckey-row button{border:0;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:800;
+  padding:11px 22px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap}
+.sckey-status{font-size:12px;margin-bottom:12px;min-height:18px;line-height:1.7}
+/* 注册教程折叠块 */
+.guide{border:1px solid var(--bd);border-radius:11px;background:rgba(0,0,0,.18);margin-bottom:14px;overflow:hidden}
+.guide summary{cursor:pointer;padding:12px 15px;font-size:13px;font-weight:700;color:var(--gold);list-style:none;user-select:none}
+.guide summary::-webkit-details-marker{display:none}
+.guide summary::before{content:'▸ ';display:inline-block;transition:transform .2s}
+.guide[open] summary::before{transform:rotate(90deg)}
+.guide .g-body{padding:2px 16px 14px;font-size:12.5px;line-height:2;color:var(--txt2)}
+.guide ol{margin-left:18px}.guide li{margin:4px 0}
+.guide a{color:var(--blue);text-decoration:underline}.guide b{color:var(--gold)}
+/* ETF 快捷添加 */
+.etf-quick{margin-top:11px}
+.etf-quick button{border:1px solid rgba(245,196,81,.35);background:rgba(245,196,81,.1);color:var(--gold);
+  padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
+.etf-quick button:hover{background:rgba(245,196,81,.2)}
 </style>
 </head>
 <body>
@@ -434,22 +461,54 @@ tbody tr:hover{background:rgba(245,196,81,.04)}
 
 <!-- ============ 页面7：我的自选股 ============ -->
 <div class="page" id="p-watch">
+  <div class="privacy-note">
+    ✅ <b>放心，各看各的、互不干扰：</b>你加的股票/ETF只存在<b>你自己这台设备的浏览器</b>里，别人打开这个网页看不到、也覆盖不了；你填的微信 key 也只在你自己浏览器里，别人加的股票放量<b>不会发到你的微信</b>。反过来，你加的也只发给你自己。
+    <br>小提醒：数据存在本机，换电脑或换浏览器需要重新加一次。
+  </div>
+
   <div class="card">
-    <h2><span class="bar"></span>⭐ 添加你想盯的股票</h2>
-    <div class="sub">把你关注的股票代码加进来，网页会自动盯盘——一旦放量异动，立刻发微信提醒你</div>
+    <h2><span class="bar"></span>⭐ 添加你想盯的股票 / ETF</h2>
+    <div class="sub">把你关注的股票或ETF代码加进来，网页会自动盯盘——一旦放量异动，立刻发微信提醒你</div>
     <div class="watch-add">
-      <input id="watchInput" placeholder="输入6位代码，如 002475；可一次输入多个，用逗号/空格隔开" />
+      <input id="watchInput" placeholder="输入6位代码，如 002475 或 510300；多个用逗号/空格隔开" />
       <button id="watchAddBtn">＋ 添加关注</button>
     </div>
     <div style="font-size:11px;color:var(--txt3);line-height:1.8">
-      支持沪深A股，输入 6 位数字即可（6 开头自动识别为沪市，其余为深市）。例如：<b style="color:var(--gold)">002475, 600519, 300750</b>。添加后会保存在本机浏览器，下次打开还在。
+      支持<b>沪深A股 + ETF基金</b>，输入 6 位数字即可自动识别市场：<b style="color:var(--gold)">5/6/9 开头=沪市</b>（如 510300、588000、600519），<b style="color:var(--gold)">0/1/3 开头=深市</b>（如 159915、002475、300750）。例如：<b style="color:var(--gold)">510300, 159915, 002475, 600519</b>。
+    </div>
+    <div class="etf-quick">
+      <button id="watchAddETFBtn">⚡ 一键加入 9 只国家队重仓ETF</button>
     </div>
   </div>
 
-  <div class="wxbar">
-    <span>📱 微信放量提醒：<span class="on" id="wxStatus">已开启</span></span>
-    <span style="color:var(--txt3)">· 网页打开时自动盯盘，放量即推送</span>
-    <button id="wxTestBtn">📤 发条测试消息</button>
+  <div class="card">
+    <h2><span class="bar"></span>📱 微信提醒设置（每人填自己的）</h2>
+    <div class="sub">填你自己的 Server酱 SendKey，只推送你加的股票/ETF，别人收不到也不干扰你</div>
+    <div class="sckey-row">
+      <input id="sckeyInput" type="password" placeholder="粘贴你的 Server酱 SendKey（SCT 开头）" />
+      <button id="sckeySaveBtn">保存设置</button>
+    </div>
+    <div class="sckey-status" id="sckeyStatus"></div>
+
+    <details class="guide">
+      <summary>🔑 怎么获取 Server酱 SendKey？（点开看，1分钟搞定）</summary>
+      <div class="g-body">
+        <ol>
+          <li>手机或电脑打开 <a href="https://sct.ftqq.com/" target="_blank" rel="noopener">sct.ftqq.com</a>（Server酱 Turbo）。</li>
+          <li>点右上角 <b>登录</b>，用<b>微信扫码</b>即可，不用注册密码。</li>
+          <li>登录后点左侧菜单 <b>「SendKey」</b>，会看到一串 <b>SCT</b> 开头的字符，点复制。</li>
+          <li>把这串字符粘贴到上面的输入框，点 <b>「保存设置」</b>。</li>
+          <li>按页面提示<b>关注微信公众号</b>并绑定，之后就能收到提醒了。</li>
+        </ol>
+        <div style="margin-top:8px;color:var(--txt3)">免费版每天有推送条数限制，个人盯几只股票完全够用。不填 key 的话，网页照样盯盘显示，只是不发微信。</div>
+      </div>
+    </details>
+
+    <div class="wxbar">
+      <span>📱 当前状态：<span class="on" id="wxStatus">--</span></span>
+      <span style="color:var(--txt3)">· 交易时段打开网页自动盯盘，放量即推送</span>
+      <button id="wxTestBtn">📤 发条测试消息</button>
+    </div>
   </div>
 
   <div class="explain">
@@ -496,7 +555,14 @@ const WATCH_STORE='etf_my_watch_v1', PUSH_COOL='etf_push_cool_v1';
 let watchlist=loadWatchlist();
 function loadWatchlist(){try{const s=localStorage.getItem(WATCH_STORE);return s?JSON.parse(s):[];}catch(e){return [];}}
 function saveWatchlist(){try{localStorage.setItem(WATCH_STORE,JSON.stringify(watchlist));}catch(e){toast('保存失败：浏览器存储不可用');}}
-function normCode(s){s=s.trim();if(/^\d{6}$/.test(s))return (s[0]==='6'||s[0]==='9'?'sh':'sz')+s;if(/^(sh|sz)\d{6}$/.test(s))return s;return null;}
+function normCode(s){
+  s=s.trim();
+  if(/^(sh|sz)\d{6}$/.test(s))return s;
+  // 5(沪ETF/基金)/6(沪股)/9(沪B) → 沪市；0/1/3 → 深市（含159深ETF）
+  if(/^\d{6}$/.test(s))return (s[0]==='5'||s[0]==='6'||s[0]==='9'?'sh':'sz')+s;
+  return null;
+}
+function isETF(code){const n=String(code).slice(2);return n[0]==='5'||n.slice(0,2)==='15';}
 function addWatchStocks(){
   const raw=$('#watchInput').value.trim();if(!raw){toast('请输入股票代码');return;}
   const parts=raw.split(/[,，\s、;；]+/).filter(Boolean);let ok=0,dup=0,bad=0;
@@ -509,6 +575,14 @@ function addWatchStocks(){
   saveWatchlist();$('#watchInput').value='';
   if(ok){buildWatchScripts();renderWatch();}
   toast(`成功添加 ${ok} 只${dup?'，'+dup+' 只已存在':''}${bad?'，'+bad+' 个代码无效':''}`);
+}
+function addNationETFs(){
+  let ok=0,dup=0;ETFs.forEach(e=>{
+    if(watchlist.some(w=>w.code===e.code)){dup++;return;}
+    watchlist.push({code:e.code,cost:null});ok++;
+  });
+  saveWatchlist();buildWatchScripts();renderWatch();
+  toast(`已加入 ${ok} 只国家队ETF${dup?'，另有 '+dup+' 只已在关注':''}`);
 }
 function removeWatch(code){
   watchlist=watchlist.filter(w=>w.code!==code);saveWatchlist();
@@ -649,11 +723,27 @@ function parseQuotes(){
   }
 }
 
-/* =========== 自选股放量检测 + 微信推送 =========== */
-const SCKEY='SCT476466TByE9ZoLkvkodW6xc9MrYBEVz';
+/* =========== 自选股放量检测 + 微信推送（每人用自己的 key，存本机浏览器）=========== */
+const SCKEY_STORE='etf_sckey_v1';
+function loadSckey(){try{return (localStorage.getItem(SCKEY_STORE)||'').trim();}catch(e){return '';}}
+function saveSckey(){
+  const el=$('#sckeyInput'),v=el.value.trim(),st=$('#sckeyStatus');
+  if(v&&!/^SCT\S+$/.test(v)){st.innerHTML='<span style="color:var(--up)">⚠️ 格式不对：Server酱的 key 一般以 SCT 开头，请检查是否复制完整。</span>';return;}
+  try{if(v)localStorage.setItem(SCKEY_STORE,v);else localStorage.removeItem(SCKEY_STORE);}catch(e){st.innerHTML='<span style="color:var(--up)">保存失败：浏览器存储不可用。</span>';return;}
+  updateWxStatus();
+  st.innerHTML=v?'<span style="color:#4ade80">✅ 已保存。你的自选股放量只会推送到<b>你自己的微信</b>，别人收不到、也不影响你。</span>':'<span style="color:var(--txt3)">已清空。不填 key 只在本机盯盘显示，不发微信。</span>';
+  toast(v?'微信提醒已保存':'已清空微信提醒');
+}
+function updateWxStatus(){
+  const has=!!loadSckey(),el=$('#wxStatus');
+  el.textContent=has?'已开启（推到你的微信）':'未配置 · 仅本机盯盘';
+  el.style.color=has?'':'var(--txt3)';
+  const inp=$('#sckeyInput');if(inp&&document.activeElement!==inp)inp.value=loadSckey();
+}
 function pushWx(title,desp){
+  const key=loadSckey();if(!key)return; // 没填自己的 key 就不推送
   try{
-    fetch(`https://sctapi.ftqq.com/${SCKEY}.send`,{
+    fetch(`https://sctapi.ftqq.com/${key}.send`,{
       method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
       body:'title='+encodeURIComponent(title)+'&desp='+encodeURIComponent(desp),mode:'cors'
     }).then(r=>r.json()).then(j=>{if(j.code!==0)console.warn('推送返回',j);}).catch(e=>console.warn('推送失败',e));
@@ -668,6 +758,7 @@ function checkWatchAlerts(){
   watchlist.forEach(w=>{
     const q=quotes[w.code];if(!q)return;
     const ratio=q.ratio||0,pct=q.pct||0,nm=q.name||w.code;
+    const pdec=isETF(w.code)?3:2;
     const key=w.code,last=cool[key]||0;
     const up=ratio>=2&&pct>=2, down=ratio>=2&&pct<=-2;
     if(!up&&!down)return;
@@ -675,22 +766,23 @@ function checkWatchAlerts(){
     if(up){
       setCool(key,now);
       pushWx(`🚀 自选放量走强 · ${nm}`,
-        `### ${nm} 放量异动\n\n- 现价：**${q.price.toFixed(2)}**  涨跌：**<font color="#ff4d5e">+${pct.toFixed(2)}%</font>**\n- 量比：**${ratio.toFixed(2)}**（成交量是近5日同期的${ratio.toFixed(1)}倍）\n- 换手：${(q.turnover||0).toFixed(1)}%  成交额：${((q.amount||0)/1e4).toFixed(1)}亿\n`+
+        `### ${nm} 放量异动\n\n- 现价：**${q.price.toFixed(pdec)}**  涨跌：**<font color="#ff4d5e">+${pct.toFixed(2)}%</font>**\n- 量比：**${ratio.toFixed(2)}**（成交量是近5日同期的${ratio.toFixed(1)}倍）\n- 换手：${(q.turnover||0).toFixed(1)}%  成交额：${((q.amount||0)/1e4).toFixed(1)}亿\n`+
         (w.cost?`- 你的成本：${w.cost.toFixed(2)}  浮盈亏：**<font color="${q.price>=w.cost?'#ff4d5e':'#22c55e'}">${((q.price-w.cost)/w.cost*100).toFixed(1)}%</font>**\n`:'')+
         `\n> 你关注的股票放量走强，资金明显活跃。**可关注，但别盲目追高**——放量也可能是拉高出货。\n\n*${new Date().toLocaleTimeString('zh-CN',{hour12:false})} 自动盯盘推送 · 仅供参考，不构成投资建议*`);
     }else{
       setCool(key,now);
       pushWx(`⚠️ 自选放量下挫 · ${nm}`,
-        `### ${nm} 放量下跌\n\n- 现价：**${q.price.toFixed(2)}**  涨跌：**<font color="#22c55e">${pct.toFixed(2)}%</font>**\n- 量比：**${ratio.toFixed(2)}**  成交额：${((q.amount||0)/1e4).toFixed(1)}亿\n`+
+        `### ${nm} 放量下跌\n\n- 现价：**${q.price.toFixed(pdec)}**  涨跌：**<font color="#22c55e">${pct.toFixed(2)}%</font>**\n- 量比：**${ratio.toFixed(2)}**  成交额：${((q.amount||0)/1e4).toFixed(1)}亿\n`+
         (w.cost?`- 你的成本：${w.cost.toFixed(2)}  浮盈亏：**<font color="${q.price>=w.cost?'#ff4d5e':'#22c55e'}">${((q.price-w.cost)/w.cost*100).toFixed(1)}%</font>**\n`:'')+
         `\n> 你关注的股票放量下跌，抛压较重。**留意风险，别急着补仓**。\n\n*${new Date().toLocaleTimeString('zh-CN',{hour12:false})} 自动盯盘推送 · 仅供参考，不构成投资建议*`);
     }
   });
 }
 function testPush(){
+  if(!loadSckey()){toast('请先在上方填写并保存你自己的 Server酱 key');$('#sckeyInput').focus();return;}
   pushWx('✅ 自选股盯盘提醒测试',
-    `### 测试成功\n\n你的微信已经和网页盯盘连上了。以后交易日打开这个网页，你关注的股票一旦放量异动，就会收到这样的提醒。\n\n> 提醒是让你"去看一眼"，买卖决定还得你自己拿。\n\n*仅供参考，不构成投资建议*`);
-  toast('测试消息已发送，请查收微信');
+    `### 测试成功\n\n你的微信已经和你自己的网页盯盘连上了。以后交易日打开这个网页，你关注的股票/ETF一旦放量异动，就会收到这样的提醒——别人加的票不会发给你，你加的也不会发给别人。\n\n> 提醒是让你"去看一眼"，买卖决定还得你自己拿。\n\n*仅供参考，不构成投资建议*`);
+  toast('测试消息已发送，请查收你自己的微信');
 }
 
 /* =========== 实时刷新资金流（JSONP）=========== */
@@ -1044,6 +1136,8 @@ function renderWatch(){
     const nm=q.name||w.code;
     const cls=pct>0?'up':pct<0?'down':'flat';
     const hasData=!!q.price;
+    const dec=isETF(w.code)?3:2; // ETF 价格显示 3 位小数
+    const pLabel=isETF(w.code)?'ETF':'股票';
     const alert=ratio>=2&&Math.abs(pct)>=2;
     let tagCls='idle',tagTxt='成交平稳';
     if(alert){tagCls=pct>0?'alert':'idle';tagTxt=pct>0?'🚀 放量走强':'⚠️ 放量下挫';}
@@ -1051,16 +1145,16 @@ function renderWatch(){
     let costHtml='';
     if(w.cost){
       const diff=(price-w.cost)/w.cost*100;
-      costHtml=`<div class="wcost">成本 ${w.cost.toFixed(2)} · 盈亏 <b class="${diff>=0?'up':'down'}">${diff>=0?'+':''}${diff.toFixed(1)}%</b></div>`;
+      costHtml=`<div class="wcost">成本 ${w.cost.toFixed(dec)} · 盈亏 <b class="${diff>=0?'up':'down'}">${diff>=0?'+':''}${diff.toFixed(1)}%</b></div>`;
     }
     return `<div class="wcard ${alert&&pct>0?'alert':''}">
       <span class="del" onclick="removeWatch('${w.code}')" title="移除">×</span>
-      <div class="wn">${nm}</div><div class="wc">${w.code}</div>
-      <div class="wp"><span class="p ${cls}">${hasData?price.toFixed(2):'--'}</span><span class="c ${cls}">${hasData?(pct>0?'+':'')+pct.toFixed(2)+'%':'--'}</span></div>
+      <div class="wn">${nm} <span style="font-size:9px;color:var(--gold);font-weight:600">${pLabel}</span></div><div class="wc">${w.code}</div>
+      <div class="wp"><span class="p ${cls}">${hasData?price.toFixed(dec):'--'}</span><span class="c ${cls}">${hasData?(pct>0?'+':'')+pct.toFixed(2)+'%':'--'}</span></div>
       <div class="wm"><div>量比<b>${hasData?ratio.toFixed(2):'--'}</b></div><div>换手<b>${hasData?turn.toFixed(1)+'%':'--'}</b></div><div>成交额<b>${hasData?(q.amount/1e4).toFixed(1)+'亿':'--'}</b></div></div>
       <span class="wtag ${tagCls}">${tagTxt}</span>
       ${costHtml}
-      <div class="wcost">成本价 <input type="number" step="0.01" placeholder="选填" value="${w.cost||''}" onchange="setWatchCost('${w.code}',this)" /> 元 · 填了自动算盈亏</div>
+      <div class="wcost">成本价 <input type="number" step="${isETF(w.code)?'0.001':'0.01'}" placeholder="选填" value="${w.cost||''}" onchange="setWatchCost('${w.code}',this)" /> 元 · 填了自动算盈亏</div>
     </div>`;
   }).join('');
 }
@@ -1080,9 +1174,12 @@ function init(){
   $('#refreshBtn').onclick=()=>{fetchQuotes();refreshFlow();fetchLimitUp();toast('数据已刷新');};
   $('#watchAddBtn').onclick=addWatchStocks;
   $('#watchInput').addEventListener('keydown',e=>{if(e.key==='Enter')addWatchStocks();});
+  $('#watchAddETFBtn').onclick=addNationETFs;
+  $('#sckeySaveBtn').onclick=saveSckey;
+  $('#sckeyInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveSckey();});
   $('#wxTestBtn').onclick=testPush;
   renderAll();
-  parseWatchQuotes();renderWatch();
+  parseWatchQuotes();renderWatch();updateWxStatus();
 }
 init();
 </script>
