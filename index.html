@@ -281,6 +281,28 @@ tbody tr:hover{background:rgba(245,196,81,.04)}
 .sig.pending{opacity:.6}
 .sig-note{font-size:10.5px;color:var(--txt3);line-height:1.75;margin-top:10px;padding-top:10px;border-top:1px solid var(--bd)}
 .sig-note b{color:var(--gold)}
+/* 市场情绪温度计 */
+.mood-card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.mood-top{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.mood-gauge{flex:1;min-width:260px}
+.mood-gauge .mg-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.mood-gauge .mg-head .v{font-size:26px;font-weight:900}
+.mood-gauge .mg-head .v small{font-size:12px;color:var(--txt3);font-weight:600}
+.mood-bar{height:12px;border-radius:8px;background:linear-gradient(90deg,#22c55e,#84cc16,#f5c451,#ff9b5c,#ff4d5e);position:relative;overflow:visible}
+.mood-bar .needle{position:absolute;top:-5px;width:4px;height:22px;background:#fff;border-radius:3px;box-shadow:0 0 8px rgba(255,255,255,.8);transform:translateX(-50%);transition:left .6s}
+.mood-scale{display:flex;justify-content:space-between;font-size:9.5px;color:var(--txt3);margin-top:7px}
+.mood-stats{display:flex;gap:10px;flex-wrap:wrap}
+.mood-stats .ms{background:rgba(0,0,0,.2);border:1px solid var(--bd);border-radius:10px;padding:8px 13px;text-align:center;min-width:78px}
+.mood-stats .ms .n{font-size:19px;font-weight:900;color:var(--gold)}
+.mood-stats .ms .l{font-size:10px;color:var(--txt3);margin-top:2px}
+.mood-advice{margin-top:14px;padding:11px 14px;border-radius:10px;font-size:12.5px;line-height:1.7;background:rgba(77,139,255,.08);border:1px solid rgba(77,139,255,.2)}
+.mood-advice b{color:var(--gold)}
+/* 资金情绪小标 */
+.fund-emotion{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:7px}
+.fe-hot{background:rgba(255,77,94,.14);color:#ff6b7a;border:1px solid rgba(255,77,94,.3)}
+.fe-warm{background:rgba(77,139,255,.14);color:#7fa9ff;border:1px solid rgba(77,139,255,.3)}
+.fe-cold{background:rgba(34,197,94,.14);color:#4ade80;border:1px solid rgba(34,197,94,.3)}
+.fe-na{background:rgba(125,155,205,.1);color:var(--txt3);border:1px solid var(--bd)}
 .w-empty .big{font-size:34px;display:block;margin-bottom:8px;opacity:.6}
 .wxbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:rgba(34,197,94,.06);
   border:1px solid rgba(34,197,94,.2);border-radius:11px;padding:12px 15px;margin-bottom:14px;font-size:12px;color:var(--txt2)}
@@ -360,6 +382,22 @@ tbody tr:hover{background:rgba(245,196,81,.04)}
     <div class="main" id="verdictMain"><span class="emoji">⏳</span>正在生成今日判断…</div>
     <div class="desc" id="verdictDesc">正在读取今日资金流向和国家队持仓数据…</div>
     <div class="tags" id="verdictTags"></div>
+  </div>
+
+  <div class="mood-card">
+    <div class="mood-top">
+      <div class="mood-gauge">
+        <div class="mg-head"><span style="font-size:13px;font-weight:700">🌡️ 市场情绪温度计 <span style="font-size:10px;color:var(--txt3);font-weight:400">（涨停/连板数据，越高越狂热）</span></span><span class="v" id="moodTemp">--<small> /100</small></span></div>
+        <div class="mood-bar"><div class="needle" id="moodNeedle" style="left:50%"></div></div>
+        <div class="mood-scale"><span>🥶冰点 0</span><span>😟偏冷</span><span>😐中性 50</span><span>😊偏暖</span><span>🔥过热 100</span></div>
+      </div>
+      <div class="mood-stats">
+        <div class="ms"><div class="n" id="moodZt">--</div><div class="l">今日涨停</div></div>
+        <div class="ms"><div class="n" id="moodLb">--</div><div class="l">连板股</div></div>
+        <div class="ms"><div class="n" id="moodMax">--</div><div class="l">最高连板</div></div>
+      </div>
+    </div>
+    <div class="mood-advice" id="moodAdvice">正在读取全市场涨停数据，计算情绪温度…</div>
   </div>
 
   <div class="quick">
@@ -542,9 +580,10 @@ tbody tr:hover{background:rgba(245,196,81,.04)}
 
   <div class="card">
     <details class="guide" style="margin-bottom:0">
-      <summary>🧠 每张卡片下方的"买卖信号"是怎么算的？（点开看）</summary>
+      <summary>🧠 买卖信号怎么算的？技术面＋资金情绪双引擎（点开看）</summary>
       <div class="g-body">
-        <div>用<b>最近 60 个交易日的真实日K线</b>，算 5 项指标综合打分（0~100 分），再翻译成大白话信号：</div>
+        <div style="color:var(--gold);font-weight:700;margin-bottom:6px">综合分 ＝ 技术面 60% ＋ 资金情绪 40%（ETF 只有技术面）</div>
+        <div><b>① 技术面</b>——用最近 60 个交易日真实日K线，5 项指标打分：</div>
         <ol>
           <li><b>趋势</b>：股价和 5/10/20 日均线的关系，多头排列加分、空头排列减分。</li>
           <li><b>位置</b>：现价在近 60 日高低区间的位置，低位是机会区、高位是追高风险区。</li>
@@ -552,10 +591,12 @@ tbody tr:hover{background:rgba(245,196,81,.04)}
           <li><b>RSI</b>：超买（&gt;75）提示风险、超卖（&lt;30）提示反弹机会。</li>
           <li><b>量能</b>：近期成交量比 20 日均量放大还是萎缩。</li>
         </ol>
+        <div style="margin-top:6px"><b>② 资金情绪</b>——用东方财富机构级量化数据（不是编的）：主力买入占比、资金专注度 FOCUS、机构综合评分、全市场排名。简单说就是<b>看大资金和机构是在买还是在卖</b>。</div>
+        <div style="margin-top:6px"><b>③ 市场情绪</b>——首页的温度计用全市场涨停家数、连板家数、最高连板高度，告诉你现在市场是狂热还是冰点，用来决定该重仓还是防守。</div>
         <div style="margin-top:8px">
           <b>分数怎么看：</b>🔴≥72 可考虑买入 · 🔵58~71 偏强持有 · ⚪42~57 中性观望 · 🟠28~41 偏弱谨慎 · 🟢&lt;28 建议卖出/回避。（按A股习惯：红=涨=买，绿=跌=卖）
         </div>
-        <div style="margin-top:8px;color:var(--txt3)">信号每天开盘后自动重算，K线数据在本地缓存半天，点卡片上的"🔄 重算"可强制刷新。<b style="color:var(--orange)">⚠️ 这是技术面量化打分，仅供参考，不构成投资建议；买卖决定请自己做，风险自担。</b></div>
+        <div style="margin-top:8px;color:var(--txt3)">数据开盘后自动更新，K线和资金数据本地缓存几小时，点「🔄 重算信号」可强制刷新。<b style="color:var(--orange)">⚠️ 这是量化打分，只反映技术面和资金面，不含公司基本面/新闻突发，仅供参考，不构成投资建议；买卖决定请自己做，风险自担。</b></div>
       </div>
     </details>
   </div>
@@ -669,7 +710,7 @@ function addWatchStocks(){
     watchlist.push({code,cost:null});ok++;
   });
   saveWatchlist();$('#watchInput').value='';
-  if(ok){buildWatchScripts();renderWatch();setTimeout(()=>fetchKlines(()=>renderWatch()),300);}
+  if(ok){buildWatchScripts();renderWatch();setTimeout(()=>fetchFundEmotion(()=>fetchKlines(()=>renderWatch())),300);}
   toast(`成功添加 ${ok} 只${dup?'，'+dup+' 只已存在':''}${bad?'，'+bad+' 个代码无效':''}`);
 }
 function addNationETFs(){
@@ -678,7 +719,7 @@ function addNationETFs(){
     watchlist.push({code:e.code,cost:null});ok++;
   });
   saveWatchlist();buildWatchScripts();renderWatch();
-  if(ok)setTimeout(()=>fetchKlines(()=>renderWatch()),300);
+  if(ok)setTimeout(()=>fetchFundEmotion(()=>fetchKlines(()=>renderWatch())),300);
   toast(`已加入 ${ok} 只国家队ETF${dup?'，另有 '+dup+' 只已在关注':''}`);
 }
 function removeWatch(code){
@@ -906,6 +947,35 @@ function fetchJSONP(rpt,cols,sort,st,filter,ps,cb){
   s.src=`https://datacenter-web.eastmoney.com/api/data/v1/get?callback=${cn}&reportName=${rpt}&columns=${cols}&pageSize=${ps}&filter=${filter}&sortColumns=${sort}&sortTypes=${st}&r=${Date.now()}`;
   s.onerror=()=>{};document.head.appendChild(s);
   setTimeout(()=>{if(window[cn]){try{delete window[cn];}catch(e){}}},8000);
+}
+
+/* =========== 市场情绪温度计（基于涨停/连板真实数据）=========== */
+function calcMood(){
+  const pool=ztPool||[];
+  const zt=pool.length;
+  const lb=pool.filter(x=>x.lbc>=2).length;
+  const maxLb=pool.reduce((m,x)=>Math.max(m,x.lbc||1),0);
+  let temp=50;
+  if(zt>=80)temp+=20; else if(zt>=50)temp+=12; else if(zt>=30)temp+=5; else if(zt<20)temp-=15;
+  if(lb>=15)temp+=15; else if(lb>=8)temp+=8; else if(lb<=3)temp-=8;
+  if(maxLb>=7)temp+=10; else if(maxLb>=5)temp+=5;
+  temp=Math.max(0,Math.min(100,Math.round(temp)));
+  let mood,cls,advice;
+  if(temp>=75){mood='🔥 过热';cls='up';advice='<b>市场情绪偏热。</b>涨停家数和连板高度都处于高位，赚钱效应强，但风险也在累积。此时追高要谨慎，仓位别太重，设好止损，随时准备落袋。';}
+  else if(temp>=58){mood='😊 偏暖';cls='up';advice='<b>市场情绪偏暖。</b>资金活跃、赚钱效应不错，是比较舒服的参与环境。可以正常操作，跟随主力资金方向，但仍要控制仓位。';}
+  else if(temp>=42){mood='😐 中性';cls='';advice='<b>市场情绪中性。</b>多空分歧不大，没有明显方向。适合轻仓观望、精选个股，不急于重仓押注，等信号更明确。';}
+  else if(temp>=28){mood='😟 偏冷';cls='down';advice='<b>市场情绪偏冷。</b>涨停少、连板弱，赚钱效应差。此时以防守为主，减少操作频率，保住本金，等市场回暖再说。';}
+  else{mood='🥶 冰点';cls='down';advice='<b>市场情绪冰点。</b>涨停极少、高度断层，通常是阶段底部区域。风险偏好低的先空仓等待；长线资金可考虑分批低吸优质标的，但别急着重仓抄底。';}
+  return {temp,mood,cls,advice,zt,lb,maxLb};
+}
+function renderMood(){
+  const m=calcMood();
+  if(!m.zt&&!m.lb){return;} // 无数据时保留占位
+  const t=$('#moodTemp');if(t)t.innerHTML=`${m.temp}<small> /100</small>`;
+  const nd=$('#moodNeedle');if(nd){nd.style.left=m.temp+'%';nd.style.background=m.cls==='up'?'#ff4d5e':m.cls==='down'?'#22c55e':'#f5c451';}
+  const set=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
+  set('#moodZt',m.zt);set('#moodLb',m.lb);set('#moodMax',m.maxLb);
+  const ad=$('#moodAdvice');if(ad)ad.innerHTML=`<b>${m.mood} · 温度 ${m.temp}：</b>${m.advice}`;
 }
 
 /* =========== 渲染：今日判断 =========== */
@@ -1222,6 +1292,40 @@ function renderNation(){
 /* =========== 渲染：我的自选股 =========== */
 /* ===== 自选股买卖信号：基于新浪真实日K线的多因子打分 ===== */
 const KLINE_CACHE={}; // code -> {ts, data}
+const FUND_CACHE={};  // 纯代码(600519) -> {ts, ratio, focus, score, rank, net}
+// 拉取自选股中"个股"的资金情绪（东财量化榜单，ETF 无此数据）
+function fetchFundEmotion(cb){
+  const stockCodes=watchlist.filter(w=>!isETF(w.code)).map(w=>w.code.slice(2));
+  if(!stockCodes.length){cb&&cb();return;}
+  const codes=stockCodes.map(c=>'%22'+c+'%22').join('%2C');
+  const filter='(SECURITY_CODE%20in%20('+codes+'))';
+  fetchJSONP('RPT_DMSK_TS_STOCKNEW',
+    'SECURITY_CODE,PRIME_INFLOW,RATIO,FOCUS,TOTALSCORE,RANK,RANK_UP,CHANGE_RATE',
+    'RANK',1,filter,100,d=>{
+      if(d&&d.length)d.forEach(x=>{
+        FUND_CACHE[x.SECURITY_CODE]={ts:Date.now(),ratio:x.RATIO||0,focus:x.FOCUS||0,
+          score:x.TOTALSCORE||0,rank:x.RANK||9999,rankUp:x.RANK_UP||0,net:x.PRIME_INFLOW||0};
+      });
+      cb&&cb();
+    });
+}
+// 资金情绪打分 0~100（仅个股）
+function fundScore(code){
+  const c=FUND_CACHE[code.slice(2)];if(!c)return null;
+  let s=50;const why=[];
+  if(c.ratio>0.55){s+=10;why.push('主力买入占比高');}
+  else if(c.ratio<0.45){s-=10;why.push('主力卖出居多');}
+  if(c.focus>85){s+=8;why.push('资金关注度高');}
+  else if(c.focus<65){s-=6;why.push('关注度偏低');}
+  if(c.score>75){s+=10;why.push('机构综合评分高');}
+  else if(c.score<45){s-=10;why.push('机构评分偏低');}
+  if(c.rank<=100){s+=9;why.push(`全市场排名${c.rank}`);}
+  else if(c.rank<=500){s+=5;why.push(`排名靠前${c.rank}`);}
+  else if(c.rank>3000){s-=9;why.push(`排名靠后${c.rank}`);}
+  if(c.rankUp>0){s+=3;why.push('排名上升');}
+  s=Math.max(0,Math.min(100,Math.round(s)));
+  return {score:s,why:why.slice(0,3).join('、'),net:c.net,rank:c.rank};
+}
 function fetchKlines(cb){
   let pending=watchlist.length;
   if(!pending){cb&&cb();return;}
@@ -1274,24 +1378,43 @@ function calcSignal(code){
   if(vr>1.2){score+=8;reasons.push('近期温和放量');}
   else if(vr<0.7){score-=5;reasons.push('量能萎缩');}
   score=Math.max(0,Math.min(100,Math.round(score)));
+  // 融合资金情绪：个股 技术6:资金4；ETF 无资金数据，纯技术
+  const fund=fundScore(code);
+  let finalScore=score,fundPart=null;
+  if(fund){
+    finalScore=Math.round(score*0.6+fund.score*0.4);
+    reasons.push('资金面：'+fund.why);
+    fundPart=fund;
+  }
+  finalScore=Math.max(0,Math.min(100,finalScore));
   let cls,lab,emo;
-  if(score>=72){cls='buy';lab='可考虑买入';emo='🔴';}      // A股：红=涨=买
-  else if(score>=58){cls='hold';lab='偏强 · 持有为主';emo='🔵';}
-  else if(score>=42){cls='neutral';lab='中性 · 观望';emo='⚪';}
-  else if(score>=28){cls='weak';lab='偏弱 · 谨慎';emo='🟠';}
+  if(finalScore>=72){cls='buy';lab='可考虑买入';emo='🔴';}      // A股：红=涨=买
+  else if(finalScore>=58){cls='hold';lab='偏强 · 持有为主';emo='🔵';}
+  else if(finalScore>=42){cls='neutral';lab='中性 · 观望';emo='⚪';}
+  else if(finalScore>=28){cls='weak';lab='偏弱 · 谨慎';emo='🟠';}
   else{cls='sell';lab='建议卖出 / 回避';emo='🟢';}       // A股：绿=跌=卖
-  return {score,cls,lab,emo,why:reasons.slice(0,4).join('、'),day:k[k.length-1].day};
+  return {score:finalScore,tech:score,fund:fundPart,cls,lab,emo,why:reasons.slice(0,4).join('、'),day:k[k.length-1].day};
 }
 function recalcSignals(){
-  toast('正在重新计算买卖信号…');
-  watchlist.forEach(w=>delete KLINE_CACHE[w.code]);
-  fetchKlines(()=>renderWatch());
+  toast('正在重新计算买卖信号（含资金情绪）…');
+  watchlist.forEach(w=>{delete KLINE_CACHE[w.code];});
+  Object.keys(FUND_CACHE).forEach(k=>delete FUND_CACHE[k]);
+  fetchFundEmotion(()=>fetchKlines(()=>renderWatch()));
 }
 function signalHtml(code){
   const s=calcSignal(code);
   if(!s)return `<div class="sig pending"><div class="score">--<small>计算中</small></div><div class="info"><div class="lab">正在获取日K线…</div><div class="why">首次加载需几秒，之后自动缓存</div></div></div>`;
-  return `<div class="sig ${s.cls}"><div class="score">${s.score}<small>分</small></div>
-    <div class="info"><div class="lab">${s.emo} ${s.lab}</div><div class="why">${s.why}（截至 ${s.day}）</div></div></div>`;
+  const breakdown=s.fund
+    ? `技术面 ${s.tech} 分 ＋ 资金面 ${s.fund.score} 分（6:4加权）`
+    : `技术面 ${s.tech} 分（ETF无个股资金流数据）`;
+  const fe=s.fund
+    ? `<span class="fund-emotion ${s.fund.score>=65?'fe-hot':s.fund.score>=50?'fe-warm':'fe-cold'}">💰资金情绪 ${s.fund.score} · 排名${s.fund.rank}</span>`
+    : '';
+  return `<div class="sig ${s.cls}"><div class="score">${s.score}<small>综合分</small></div>
+    <div class="info"><div class="lab">${s.emo} ${s.lab}</div>
+      <div class="why">${s.why}（截至 ${s.day}）</div>
+      <div class="why" style="color:var(--gold);opacity:.85">${breakdown}</div>
+      ${fe?`<div style="margin-top:5px">${fe}</div>`:''}</div></div>`;
 }
 
 function renderWatch(){
@@ -1331,7 +1454,7 @@ function renderWatch(){
   }).join('');
 }
 
-function renderAll(){renderHome();renderETF();renderSector();renderStocks();renderLimit();renderNation();renderWatch();}
+function renderAll(){renderHome();renderMood();renderETF();renderSector();renderStocks();renderLimit();renderNation();renderWatch();}
 
 /* =========== 初始化 =========== */
 function init(){
@@ -1353,8 +1476,8 @@ function init(){
   $('#recalcBtn').onclick=recalcSignals;
   renderAll();
   parseWatchQuotes();renderWatch();updateWxStatus();
-  // 拉取自选股日K线，算完后重绘信号（不阻塞其它数据）
-  if(watchlist.length)setTimeout(()=>fetchKlines(()=>renderWatch()),400);
+  // 拉取自选股资金情绪 + 日K线，算完后重绘信号（不阻塞其它数据）
+  if(watchlist.length)setTimeout(()=>fetchFundEmotion(()=>fetchKlines(()=>renderWatch())),400);
 }
 init();
 
