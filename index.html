@@ -124,6 +124,45 @@ tbody tr:hover{background:rgba(245,196,81,.04)}
 .stk .price{font-size:19px;font-weight:800;margin:7px 0 2px}
 .stk .metrics{display:flex;gap:14px;margin-top:10px;font-size:11px;color:var(--txt2);flex-wrap:wrap}
 .stk .metrics b{display:block;color:var(--txt);font-size:12.5px;margin-top:2px}
+
+/* ===== 连板妖股模块 ===== */
+.zb-hero{background:linear-gradient(120deg,rgba(255,77,94,.14),rgba(20,29,47,.6) 55%);border:1px solid rgba(255,77,94,.28)}
+.zb-hero .big-emoji{font-size:30px}
+.lb-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
+@media(max-width:700px){.lb-grid{grid-template-columns:1fr}}
+.lb{background:var(--card);border:1px solid var(--bd);border-radius:13px;padding:15px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.lb.hot{border-color:rgba(255,77,94,.5);background:linear-gradient(135deg,rgba(255,77,94,.1),var(--card) 60%)}
+.lb.warm{border-color:rgba(245,196,81,.4)}
+.lb.cold{opacity:.72}
+.lb .lb-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.lb .lb-name{font-size:14.5px;font-weight:800}.lb .lb-code{font-size:10.5px;color:var(--txt3);margin-top:1px}
+.lb-badge{font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.badge-3{background:rgba(255,77,94,.2);color:#ff6b7a;border:1px solid rgba(255,77,94,.4)}
+.badge-2{background:rgba(245,196,81,.18);color:var(--gold);border:1px solid rgba(245,196,81,.38)}
+.badge-1{background:rgba(125,155,205,.14);color:var(--txt2);border:1px solid var(--bd)}
+.lb .lb-score{display:flex;align-items:baseline;gap:8px;margin:11px 0 7px}
+.lb .lb-score .num{font-size:26px;font-weight:900;line-height:1}
+.lb .lb-score .lv{font-size:12px;font-weight:800}
+.lb .lb-score .unit{font-size:11px;color:var(--txt3)}
+.scorebar{height:6px;border-radius:4px;background:rgba(255,255,255,.07);overflow:hidden;margin-bottom:11px}
+.scorebar i{display:block;height:100%;border-radius:4px;transition:width .5s}
+.lb .lb-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:10px;color:var(--txt3);text-align:center;
+  padding-top:10px;border-top:1px solid var(--bd)}
+.lb .lb-metrics b{display:block;color:var(--txt);font-size:12px;margin-top:2px;font-weight:700}
+.lb .lb-why{font-size:11px;line-height:1.65;color:var(--txt2);margin-top:10px;padding:9px 11px;background:rgba(0,0,0,.2);border-radius:8px}
+.lb .lb-why b{color:var(--gold)}
+.ladder{display:flex;gap:10px;overflow-x:auto;padding:4px 0 8px}
+.ladder-col{flex:0 0 130px;background:rgba(0,0,0,.2);border:1px solid var(--bd);border-radius:11px;padding:11px;text-align:center}
+.ladder-col .lv{font-size:12px;font-weight:800;margin-bottom:8px}
+.ladder-col .cnt{font-size:22px;font-weight:900;line-height:1}
+.ladder-col .names{font-size:10px;color:var(--txt3);margin-top:7px;line-height:1.5}
+.warn-strip{background:rgba(255,77,94,.1);border:1px solid rgba(255,77,94,.3);border-radius:11px;padding:13px 15px;
+  font-size:11.5px;line-height:1.75;color:#ffb3bc;margin-bottom:14px}
+.warn-strip b{color:#ff6b7a}
+.factor-tbl{width:100%;border-collapse:collapse;font-size:11.5px}
+.factor-tbl th,.factor-tbl td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--bd)}
+.factor-tbl th{color:var(--txt3);font-weight:600;font-size:10.5px}
+.factor-tbl td:last-child,.factor-tbl th:last-child{text-align:right;color:var(--gold);font-weight:700}
 .stars{color:var(--gold);font-size:13px;letter-spacing:1px}
 
 /* 说明块 */
@@ -167,6 +206,7 @@ tbody tr:hover{background:rgba(245,196,81,.04)}
   <button data-p="etf">💰 ETF资金</button>
   <button data-p="sector">🏭 板块机会</button>
   <button data-p="stock">🚀 强势个股</button>
+  <button data-p="limit">🔥 连板妖股</button>
   <button data-p="nation">🏛️ 国家队持仓</button>
 </nav>
 
@@ -283,6 +323,47 @@ tbody tr:hover{background:rgba(245,196,81,.04)}
   <div class="card">
     <h2><span class="bar"></span>怎么用这份榜单（重要）</h2>
     <div id="stockAdvice"></div>
+  </div>
+</div>
+
+<!-- ============ 页面：连板妖股 ============ -->
+<div class="page" id="p-limit">
+  <div class="card zb-hero">
+    <h2><span class="big-emoji">🔥</span> 连板梯队 · 今天谁在封板</h2>
+    <div class="sub" id="lbDate">正在读取今日涨停数据…</div>
+    <div class="ladder" id="ladder"></div>
+    <div class="sec-note" id="ladderNote"></div>
+  </div>
+
+  <div class="warn-strip">
+    <b>⚠️ 先读这段再往下看：</b>连板股是"击鼓传花"，风险是全市场最高的——今天封板明天可能跌停（天地板）。下面的分数是<b>程序按客观数据算出的"接力难度"</b>，分数高只代表"当前封板强、分歧小"，<b>绝不代表明天会继续涨</b>。这里不推荐你追高，只帮你把风险看清楚。<b>真要参与：小仓位、设好止损、不追加速板、不碰高位断板。</b>
+  </div>
+
+  <div class="card">
+    <h2><span class="bar"></span>🎯 每只连板股的"接力评分"</h2>
+    <div class="sub">分数越高=封板越结实、当天越强 · 但强≠安全，高位连板随时可能崩 · 每60秒自动刷新</div>
+    <div class="lb-grid" id="lbGrid"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="bar"></span>📊 分数是怎么算的（大白话）</h2>
+    <div class="sub">5个客观因子加权，全用当天真实数据，不含任何主观猜测</div>
+    <table class="factor-tbl">
+      <thead><tr><th>因子</th><th>怎么看（对追板的影响）</th><th>满分</th></tr></thead>
+      <tbody>
+        <tr><td>连板高度</td><td>2-3板是"黄金接力区"，越高越容易见顶</td><td>30</td></tr>
+        <tr><td>封单力度</td><td>封单金额÷流通市值，越大封得越死</td><td>25</td></tr>
+        <tr><td>封板时间</td><td>越早封板越强，早盘秒板最好</td><td>15</td></tr>
+        <tr><td>炸板次数</td><td>炸板越多说明分歧越大、越不牢</td><td>20</td></tr>
+        <tr><td>换手健康度</td><td>换手太低无人接、太高是出货，适中最好</td><td>10</td></tr>
+      </tbody>
+    </table>
+    <div class="sec-note" id="lbMethod"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="bar"></span>🛡️ 连板股生存法则</h2>
+    <div id="lbRules"></div>
   </div>
 </div>
 
@@ -651,6 +732,121 @@ function renderStocks(){
       <div class="why">① <b>只用闲钱、小仓位</b>参与，别重仓押一只；② <b>提前想好止损位</b>（比如跌破买入价5%-8%就走）；③ <b>不追连续大涨的</b>。做不到这三点，就老老实实买宽基ETF，跟着国家队走。</div></div>`;
 }
 
+/* =========== 渲染：连板妖股 =========== */
+// 今日涨停池快照（前端会实时抓取覆盖；接口失败时兜底）
+const ZT_SNAP={date:'2026-11-19',pool:[
+  {c:'002771',n:'真视通',p:14.38,zdp:10.02,fund:208340000,zbc:0,fbt:92500,lbc:3,days:3,ct:3,hs:2.4,hybk:'IT服务'},
+  {c:'603030',n:'全筑股份',p:3.42,zdp:9.97,fund:96180000,zbc:0,fbt:92500,lbc:3,days:3,ct:3,hs:2.4,hybk:'装修装饰'},
+  {c:'603324',n:'盛剑科技',p:25.31,zdp:10.0,fund:28480000,zbc:0,fbt:93740,lbc:3,days:3,ct:3,hs:7.0,hybk:'环保设备'},
+  {c:'000711',n:'京蓝科技',p:2.85,zdp:10.04,fund:58260000,zbc:1,fbt:132545,lbc:2,days:2,ct:2,hs:11.3,hybk:'环境治理'},
+  {c:'600156',n:'华升股份',p:6.12,zdp:9.94,fund:49920000,zbc:3,fbt:93009,lbc:2,days:2,ct:2,hs:16.8,hybk:'纺织制造'}
+]};
+let ztPool=ZT_SNAP.pool, ztDate=ZT_SNAP.date;
+
+// 抓取涨停池（cb 回调 JSONP，东财 push2ex）
+function fetchLimitUp(){
+  const cn='__zt'+Math.random().toString(36).slice(2);
+  window[cn]=function(resp){
+    try{
+      const d=resp&&resp.data;
+      if(d&&d.pool&&d.pool.length){
+        ztDate=String(d.qdate).replace(/(\d{4})(\d{2})(\d{2})/,'$1-$2-$3');
+        ztPool=d.pool.map(x=>({
+          c:x.c,n:x.n,p:(x.p||0)/1000,zdp:x.zdp||0,fund:x.fund||0,zbc:x.zbc||0,
+          fbt:x.fbt||0,lbc:x.lbc||1,days:(x.zttj&&x.zttj.days)||0,ct:(x.zttj&&x.zttj.ct)||0,
+          hs:x.hs||0,hybk:x.hybk||'',ltsz:x.ltsz||0
+        }));
+        renderLimit();
+      }
+    }catch(e){}
+    try{delete window[cn];}catch(e){}
+  };
+  const s=document.createElement('script');
+  const dstr=ztDate.replace(/-/g,'');
+  s.src=`https://push2ex.eastmoney.com/getTopicZTPool?cb=${cn}&ut=7eea3edcaed734bea9cbfc24409ed989&dpt=wz.ztzt&Pageindex=0&pagesize=200&sort=lbc%3Adesc&date=${dstr}&r=${Date.now()}`;
+  s.onerror=()=>{};document.head.appendChild(s);
+  setTimeout(()=>{if(window[cn]){try{delete window[cn];}catch(e){}}},8000);
+}
+
+// 接力评分模型（0-100）：连板高度30 + 封单力度25 + 封板时间15 + 炸板20 + 换手10
+function scoreLimit(x){
+  let s=0;
+  // 连板高度：2-3板黄金区
+  if(x.lbc===2)s+=30; else if(x.lbc===3)s+=26; else if(x.lbc===1)s+=14;
+  else if(x.lbc===4)s+=18; else if(x.lbc===5)s+=11; else s+=6;
+  // 封单力度：封单/流通市值
+  const ratio=x.ltsz>0?x.fund/x.ltsz:(x.fund/1e8)*0.02;
+  if(ratio>=0.03)s+=25; else if(ratio>=0.015)s+=20; else if(ratio>=0.008)s+=14;
+  else if(ratio>=0.003)s+=8; else s+=4;
+  // 封板时间：越早越强（fbt是HHMMSS整数）
+  const t=x.fbt||0;
+  if(t<=93500)s+=15; else if(t<=103000)s+=11; else if(t<=113000)s+=7; else if(t<=140000)s+=4; else s+=2;
+  // 炸板次数：越少越好
+  if(x.zbc===0)s+=20; else if(x.zbc===1)s+=13; else if(x.zbc===2)s+=7; else if(x.zbc<=4)s+=3; else s+=0;
+  // 换手健康度：3-15%最佳
+  if(x.hs>=3&&x.hs<=15)s+=10; else if(x.hs<3)s+=7; else if(x.hs<=25)s+=5; else s+=2;
+  return Math.min(100,Math.round(s));
+}
+function limLevel(sc){
+  if(sc>=72)return{txt:'强势封板',cls:'hot',color:'var(--up)',tag:'badge-3'};
+  if(sc>=55)return{txt:'封板较稳',cls:'warm',color:'var(--gold)',tag:'badge-2'};
+  return{txt:'分歧较大',cls:'cold',color:'var(--txt2)',tag:'badge-1'};
+}
+function fmtTime(t){const s=String(t).padStart(6,'0');return s.slice(0,2)+':'+s.slice(2,4);}
+
+function renderLimit(){
+  // 梯队统计
+  const cnt={};ztPool.forEach(x=>cnt[x.lbc]=(cnt[x.lbc]||0)+1);
+  const lvls=[3,2,1].filter(k=>cnt[k]);
+  $('#lbDate').textContent=`数据日期 ${ztDate} · 全市场涨停 ${ztPool.length} 只 · 2连板以上 ${(cnt[2]||0)+(cnt[3]||0)+Object.keys(cnt).filter(k=>k>3).reduce((a,k)=>a+cnt[k],0)} 只`;
+  $('#ladder').innerHTML=lvls.map(k=>{
+    const names=ztPool.filter(x=>x.lbc===k).slice(0,3).map(x=>x.n).join('、');
+    const color=k>=3?'var(--up)':k===2?'var(--gold)':'var(--txt2)';
+    return `<div class="ladder-col"><div class="lv" style="color:${color}">${k} 连板</div><div class="cnt num" style="color:${color}">${cnt[k]}</div><div class="names">${names}${cnt[k]>3?'等':''}</div></div>`;
+  }).join('');
+  const maxLb=Math.max(0,...Object.keys(cnt).map(Number));
+  $('#ladderNote').innerHTML=`连板高度越高，市场辨识度越高，但<b style="color:var(--up)">风险也越大</b>。今天最高 <b>${maxLb} 连板</b>。记住：<b>"黄金接力区"通常是 2-3 板</b>——再往上就是加速期，随时可能高位断板吃大面。`;
+
+  // 个股评分卡：只看2连板以上（首板不算接力对象），按分数排序
+  const relay=ztPool.filter(x=>x.lbc>=2).map(x=>({...x,score:scoreLimit(x)})).sort((a,b)=>b.score-a.score);
+  $('#lbGrid').innerHTML=relay.length?relay.map(x=>{
+    const L=limLevel(x.score);
+    let why=[];
+    if(x.lbc>=4)why.push(`<b style="color:var(--up)">${x.lbc}连板属高位加速</b>，随时可能断板`);
+    else if(x.lbc<=3)why.push(`${x.lbc}连板处于相对低位`);
+    if(x.zbc===0)why.push('全天<b>零炸板</b>、封得很死');
+    else if(x.zbc>=3)why.push(`<b style="color:var(--up)">炸板${x.zbc}次</b>、分歧很大`);
+    if(x.fbt<=93500)why.push('早盘就封板、气势强');
+    else if(x.fbt>=133000)why.push('尾盘才封板、偏弱');
+    if(x.hs<3)why.push('换手低、锁筹但也可能是没人接');
+    else if(x.hs>20)why.push(`<b style="color:var(--up)">换手${fmt(x.hs,1)}%过热</b>`);
+    const ratio=x.ltsz>0?x.fund/x.ltsz*100:0;
+    if(ratio>=2)why.push(`封单占流通盘${fmt(ratio,1)}%、力度足`);
+    return `<div class="lb ${L.cls}">
+      <div class="lb-top"><div><div class="lb-name">${x.n}</div><div class="lb-code num">${x.c} · ${x.hybk}</div></div><span class="lb-badge ${L.tag}">${x.lbc}连板</span></div>
+      <div class="lb-score"><span class="num" style="color:${L.color}">${x.score}</span><span class="unit">/100分</span><span class="lv" style="color:${L.color};margin-left:auto">${L.txt}</span></div>
+      <div class="scorebar"><i style="width:${x.score}%;background:${L.color}"></i></div>
+      <div class="lb-metrics">
+        <span>现价<b class="num">${fmt(x.p,2)}</b></span>
+        <span>封单<b class="num">${fmt(x.fund/1e8,2)}亿</b></span>
+        <span>炸板<b class="num">${x.zbc}次</b></span>
+        <span>换手<b class="num">${fmt(x.hs,1)}%</b></span>
+      </div>
+      <div class="lb-why">${why.slice(0,3).map(w=>'· '+w).join('<br>')}</div>
+    </div>`;
+  }).join(''):'<div class="sec-note">今日无2连板以上个股（可能非交易日或数据更新中）</div>';
+
+  $('#lbMethod').innerHTML=`总分=连板高度(30)+封单力度(25)+封板时间(15)+炸板次数(20)+换手健康度(10)。<b style="color:var(--up)">≥72分"强势封板"</b>表示当天封得结实；<b style="color:var(--gold)">55-71"封板较稳"</b>；<b>55分以下"分歧较大"</b>。<br>但请牢记：这套分数衡量的是<b>今天的封板质量</b>，不是明天的涨跌预测。历史统计上，连板股次日高开低走、甚至天地板的情况非常常见——<b>分数再高也不构成买入理由</b>。`;
+
+  $('#lbRules').innerHTML=`
+    <div class="advice-card avoid"><div class="h">🚫 第一条：别追"加速板"和"高位板"</div>
+      <div class="why">4连板以上叫加速期，5-6板以上随时见顶。<b>越是连续一字板、涨得越猛，越危险</b>——因为里面的人赚翻了，就等有人接盘出货。真正的高手是<b>看戏不参与</b>，等它跌下来再说。</div></div>
+    <div class="advice-card"><div class="h">👀 第二条：把这里当"情绪温度计"，不是选股器</div>
+      <div class="why">连板梯队的价值是<b>看市场情绪</b>：如果全市场有一堆3板、4板，说明游资活跃、风险偏好高；如果最高才2板甚至没有连板，说明情绪冰点。<b>情绪冰点往往接近底部，情绪亢奋反而要警惕顶部</b>。这个信号帮你判断大盘，比追某一只票有用得多。</div></div>
+    <div class="advice-card"><div class="h">🛡️ 第三条：万一参与，铁律三条</div>
+      <div class="why">① <b>只打板不追高</b>（封板瞬间小仓介入，绝不在涨7-9%时追）；② <b>次日不连板就走</b>（连板股断板当天的跌幅往往很深）；③ <b>单只仓位不超过总资金5%</b>。做不到，就回到宽基ETF，跟着国家队稳稳地走。</div></div>`;
+}
+
 /* =========== 渲染：国家队 =========== */
 function renderNation(){
   const hold=[
@@ -667,18 +863,19 @@ function renderNation(){
     <b>给你的启发：</b>国家队在低位买、高位减，这个思路值得学。<b>市场大跌、宽基ETF份额猛增时，往往是相对好的布局点；市场大涨、份额缩水时，反而要谨慎。</b>跟着这个节奏做宽基ETF的定投，比追妖股稳得多。`;
 }
 
-function renderAll(){renderHome();renderETF();renderSector();renderStocks();renderNation();}
+function renderAll(){renderHome();renderETF();renderSector();renderStocks();renderLimit();renderNation();}
 
 /* =========== 初始化 =========== */
 function init(){
   const st=marketStatus();
   $('#status').textContent=st.txt;
   $('#dot').classList.toggle('closed',!st.live);
-  fetchQuotes();refreshFlow();
+  fetchQuotes();refreshFlow();fetchLimitUp();
   setInterval(fetchQuotes,15000);
   setInterval(refreshFlow,60000);
+  setInterval(fetchLimitUp,60000);
   setInterval(()=>{const s=marketStatus();$('#status').textContent=s.txt;$('#dot').classList.toggle('closed',!s.live);},30000);
-  $('#refreshBtn').onclick=()=>{fetchQuotes();refreshFlow();toast('数据已刷新');};
+  $('#refreshBtn').onclick=()=>{fetchQuotes();refreshFlow();fetchLimitUp();toast('数据已刷新');};
   renderAll();
 }
 init();
