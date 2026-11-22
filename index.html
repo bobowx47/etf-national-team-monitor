@@ -974,16 +974,20 @@ function testPush(){
 
 /* =========== 实时刷新资金流（JSONP）=========== */
 function refreshFlow(){
-  fetchJSONP('RPT_INDUSTRY_FUNDFLOW','BOARD_NAME,CHANGE_RATE,NET_INFLOW,MAX_NETINFLOW_SEC',
-    'NET_INFLOW',-1,"(TRADE_DATE%3D'"+todayStr()+"')",10,d=>{
-      if(d&&d.length){flow.sectorIn=d.map(x=>({n:x.BOARD_NAME,chg:x.CHANGE_RATE,net:x.NET_INFLOW/1e8,lead:x.MAX_NETINFLOW_SEC}));flow.date=todayStr();renderAll();}
+  // 不按"今天"过滤（周末/节假日/数据延迟会取空），改成按日期降序+资金排序，自动取最新交易日数据
+  fetchJSONP('RPT_INDUSTRY_FUNDFLOW','BOARD_NAME,CHANGE_RATE,NET_INFLOW,MAX_NETINFLOW_SEC,TRADE_DATE',
+    'TRADE_DATE%2CNET_INFLOW','-1%2C-1','',10,d=>{
+      if(d&&d.length){
+        flow.sectorIn=d.map(x=>({n:x.BOARD_NAME,chg:x.CHANGE_RATE,net:x.NET_INFLOW/1e8,lead:x.MAX_NETINFLOW_SEC}));
+        if(d[0].TRADE_DATE)flow.date=d[0].TRADE_DATE.slice(0,10);renderAll();
+      }
     });
-  fetchJSONP('RPT_INDUSTRY_FUNDFLOW','BOARD_NAME,CHANGE_RATE,NET_INFLOW',
-    'NET_INFLOW',1,"(TRADE_DATE%3D'"+todayStr()+"')",10,d=>{
+  fetchJSONP('RPT_INDUSTRY_FUNDFLOW','BOARD_NAME,CHANGE_RATE,NET_INFLOW,TRADE_DATE',
+    'TRADE_DATE%2CNET_INFLOW','-1%2C1','',10,d=>{
       if(d&&d.length){flow.sectorOut=d.map(x=>({n:x.BOARD_NAME,chg:x.CHANGE_RATE,net:x.NET_INFLOW/1e8}));renderAll();}
     });
-  fetchJSONP('RPT_DMSK_TS_STOCKNEW','SECURITY_CODE,SECURITY_NAME_ABBR,PRIME_INFLOW,CHANGE_RATE,TURNOVERRATE,TOTALSCORE',
-    'PRIME_INFLOW',-1,"(TRADE_DATE%3D'"+todayStr()+"')",12,d=>{
+  fetchJSONP('RPT_DMSK_TS_STOCKNEW','SECURITY_CODE,SECURITY_NAME_ABBR,PRIME_INFLOW,CHANGE_RATE,TURNOVERRATE,TOTALSCORE,TRADE_DATE',
+    'TRADE_DATE%2CPRIME_INFLOW','-1%2C-1','',12,d=>{
       if(d&&d.length){flow.stocks=d.map(x=>({c:x.SECURITY_CODE,n:x.SECURITY_NAME_ABBR,price:0,
         chg:x.CHANGE_RATE,net:x.PRIME_INFLOW/1e8,turn:x.TURNOVERRATE,score:x.TOTALSCORE}));renderAll();}
     });
