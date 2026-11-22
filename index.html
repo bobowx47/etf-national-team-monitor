@@ -430,19 +430,19 @@ tbody tr:hover{background:rgba(245,196,81,.04)}
 <div class="page" id="p-etf">
   <div class="explain">
     <b>怎么看"资金是进还是出"？</b> 判断ETF资金动向看三个信号：①<span class="k">份额</span>变多=有机构在大笔买入（钱进来），变少=被赎回（钱出去）；②<span class="k">成交额</span>突然放大=关注度高；③<span class="k">涨跌+资金</span>配合。
-    下方份额和规模来自公开数据（份额按季/半年披露，规模近期更新），成交额和涨跌是<b>今日实时</b>。
+    下方 <b>19 只宽基ETF</b> 的份额和规模<b style="color:var(--up)">每天自动抓取最新值</b>（同一天只抓一次、存本机），成交额和涨跌是<b>今日实时</b>。
   </div>
   <div class="card">
-    <h2><span class="bar"></span>国家队重仓ETF · 当前份额与规模</h2>
-    <div class="sub">份额越大=沉淀的资金越多 · 数据随行情更新</div>
+    <h2><span class="bar"></span>宽基ETF · 最新份额与规模 <span style="color:var(--gold);font-size:13px">共19只</span></h2>
+    <div class="sub">份额越大=沉淀的资金越多 · 按规模从大到小排列 · 标"最新"=已自动抓取当日值</div>
     <div class="live-share-grid" id="liveShareGrid"></div>
-    <div class="sec-note">份额自动抓取自公开数据源；若接口暂不可用则显示最近一期季报份额（已标注日期）。</div>
+    <div class="sec-note">份额/规模每天自动抓取自公开数据源并缓存在本机；若接口暂不可用则显示最近一次快照（标"快照"）。想立刻更新可点右上角"刷新数据"。</div>
   </div>
   <div class="card">
     <h2><span class="bar"></span>ETF 今日实时行情</h2>
     <div class="sub">今天涨了多少、成交多不多，一眼看清</div>
     <div class="tbl-wrap"><table>
-      <thead><tr><th>ETF名称</th><th>最新价</th><th>今日涨跌</th><th>成交额(亿)</th><th>规模(亿)</th><th>资金信号</th></tr></thead>
+      <thead><tr><th>ETF名称</th><th>最新价</th><th>今日涨跌</th><th>成交额(亿)</th><th>份额(亿份)</th><th>规模(亿)</th><th>资金信号</th></tr></thead>
       <tbody id="etfTableBody"></tbody>
     </table></div>
   </div>
@@ -678,14 +678,24 @@ const INDICES=[
 ];
 const ETFs=[
   {code:'sh510300',name:'沪深300ETF',full:'沪深300ETF华泰柏瑞',idx:'沪深300'},
-  {code:'sh510310',name:'沪深300ETF易方达',full:'沪深300ETF易方达',idx:'沪深300'},
-  {code:'sh510330',name:'沪深300ETF华夏',full:'沪深300ETF华夏',idx:'沪深300'},
-  {code:'sh510050',name:'上证50ETF',full:'上证50ETF华夏',idx:'上证50'},
-  {code:'sh510500',name:'中证500ETF',full:'中证500ETF南方',idx:'中证500'},
-  {code:'sh512100',name:'中证1000ETF',full:'中证1000ETF南方',idx:'中证1000'},
-  {code:'sz159915',name:'创业板ETF',full:'创业板ETF易方达',idx:'创业板指'},
   {code:'sh588000',name:'科创50ETF',full:'科创50ETF华夏',idx:'科创50'},
-  {code:'sz159919',name:'沪深300ETF嘉实',full:'沪深300ETF嘉实',idx:'沪深300'}
+  {code:'sz159915',name:'创业板ETF',full:'创业板ETF易方达',idx:'创业板指'},
+  {code:'sh510310',name:'沪深300ETF易方达',full:'沪深300ETF易方达',idx:'沪深300'},
+  {code:'sz159919',name:'沪深300ETF嘉实',full:'沪深300ETF嘉实',idx:'沪深300'},
+  {code:'sh510330',name:'沪深300ETF华夏',full:'沪深300ETF华夏',idx:'沪深300'},
+  {code:'sh510500',name:'中证500ETF',full:'中证500ETF南方',idx:'中证500'},
+  {code:'sh510050',name:'上证50ETF',full:'上证50ETF华夏',idx:'上证50'},
+  {code:'sh588080',name:'科创50ETF易方达',full:'科创50ETF易方达',idx:'科创50'},
+  {code:'sh512100',name:'中证1000ETF',full:'中证1000ETF南方',idx:'中证1000'},
+  {code:'sz159352',name:'A500ETF南方',full:'A500ETF南方',idx:'中证A500'},
+  {code:'sz159338',name:'A500ETF国泰',full:'中证A500ETF国泰',idx:'中证A500'},
+  {code:'sz159949',name:'创业板50ETF',full:'创业板50ETF华安',idx:'创业板50'},
+  {code:'sh512050',name:'A500ETF华夏',full:'A500ETF华夏',idx:'中证A500'},
+  {code:'sh510180',name:'上证180ETF',full:'上证180ETF华安',idx:'上证180'},
+  {code:'sh563220',name:'A500ETF富国',full:'A500ETF富国',idx:'中证A500'},
+  {code:'sz159922',name:'中证500ETF嘉实',full:'中证500ETF嘉实',idx:'中证500'},
+  {code:'sh512500',name:'中证500ETF华夏',full:'中证500ETF华夏',idx:'中证500'},
+  {code:'sh588220',name:'科创100ETF',full:'科创100ETF鹏华',idx:'科创100'}
 ];
 /* ===== 我的自选股（存本机浏览器 localStorage）===== */
 const WATCH_STORE='etf_my_watch_v1', PUSH_COOL='etf_push_cool_v1';
@@ -731,14 +741,53 @@ function setWatchCost(code,el){
   const v=parseFloat(el.value);w.cost=isNaN(v)||v<=0?null:v;saveWatchlist();renderWatch();
 }
 
-// 当前份额（亿份）与规模（亿元），来自东财公开数据（近期快照）
+// 份额兜底快照（亿份/亿元）——网络不通时才用。正常情况会被 fetchShares 抓到的最新值覆盖
 const SHARE_SNAP={
-  '510300':{share:496.8,scale:2016},'510310':{share:269.8,scale:1064},
-  '510330':{share:174.7,scale:739},'159919':{share:141.9,scale:601},
-  '510050':{share:164.8,scale:475},'510500':{share:94.2,scale:596},
-  '512100':{share:183.7,scale:452},'159915':{share:490.2,scale:1141},
-  '588000':{share:1031.9,scale:1363}
+  '510300':{share:551.8,scale:2223},'588000':{share:1036.3,scale:1350},
+  '159915':{share:531.7,scale:1184},'510310':{share:284.6,scale:1114},
+  '159919':{share:215.7,scale:907},'510330':{share:199.5,scale:838},
+  '510500':{share:121.3,scale:733},'510050':{share:241.3,scale:701},
+  '588080':{share:464.7,scale:586},'512100':{share:240.0,scale:552},
+  '159352':{share:306.3,scale:321},'159338':{share:278.8,scale:281},
+  '159949':{share:246.9,scale:244},'512050':{share:177.7,scale:178},
+  '510180':{share:44.6,scale:162},'563220':{share:79.9,scale:84},
+  '159922':{share:32.1,scale:79},'512500':{share:19.6,scale:67},
+  '588220':{share:49.2,scale:57}
 };
+// 份额实时数据缓存在本机：{date, data:{code:{share,scale}}}，每天首次打开自动抓最新
+const SHARE_STORE='etf_share_cache_v1';
+let SHARE_LIVE=loadShareCache();
+function loadShareCache(){
+  try{
+    const c=JSON.parse(localStorage.getItem(SHARE_STORE)||'null');
+    if(c&&c.date===todayStr()&&c.data&&Object.keys(c.data).length)return c.data;
+  }catch(e){}
+  return {};
+}
+function saveShareCache(){
+  try{localStorage.setItem(SHARE_STORE,JSON.stringify({date:todayStr(),data:SHARE_LIVE}));}catch(e){}
+}
+// 取某只ETF的最新份额（优先实时抓取，退回快照）
+function getShare(c){
+  return (SHARE_LIVE[c]&&SHARE_LIVE[c].share)?SHARE_LIVE[c]:(SHARE_SNAP[c]||null);
+}
+// 从东财批量抓取19只ETF的最新份额与规模（JSONP，按日期缓存）
+function fetchShares(cb){
+  if(Object.keys(SHARE_LIVE).length>=ETFs.length-2&&loadShareCache()){cb&&cb();return;} // 今天已抓过
+  const codes=ETFs.map(e=>e.code.slice(2));
+  const filter='(SECURITY_CODE%20in%20('+codes.map(c=>'%22'+c+'%22').join('%2C')+'))';
+  fetchJSONP('RPT_FUND_ETFLIST','SECURITY_CODE,SECURITY_NAME_ABBR,DEC_TOTALSHARE,DEC_NAV',
+    'DEC_NAV',-1,filter,50,d=>{
+      if(d&&d.length){
+        d.forEach(x=>{
+          const c=x.SECURITY_CODE,sh=(x.DEC_TOTALSHARE||0)/1e8,sc=x.DEC_NAV||0;
+          if(sh>0)SHARE_LIVE[c]={share:sh,scale:sc};
+        });
+        saveShareCache();renderETF();
+      }
+      cb&&cb();
+    });
+}
 // 季度申赎（亿份），来自基金季报
 const QTR_DATA=[
   {code:'510300',name:'沪深300ETF华泰柏瑞',q:[{d:'2026-09-30',b:201.07,s:149.02,sh:241.20},{d:'2026-06-30',b:61.27,s:320.41,sh:189.15}]},
@@ -1049,20 +1098,24 @@ function renderHome(){
 
 /* =========== 渲染：ETF资金 =========== */
 function renderETF(){
-  // 实时份额卡片
+  // 实时份额卡片（按规模从大到小）
   const grid=$('#liveShareGrid');
-  const list=Object.keys(SHARE_SNAP);
+  const list=[...ETFs].sort((a,b)=>{
+    const sa=getShare(a.code.slice(2))||{scale:0},sb=getShare(b.code.slice(2))||{scale:0};
+    return sb.scale-sa.scale;
+  }).map(e=>e.code.slice(2));
+  const isLive=Object.keys(SHARE_LIVE).length>2;
   grid.innerHTML=list.map(c=>{
-    const d=SHARE_SNAP[c];
+    const d=getShare(c)||{share:0,scale:0};
     const e=ETFs.find(x=>x.code.slice(2)===c);
     return `<div class="qcard" style="padding:13px 15px"><div class="t" style="font-size:11px">${e?e.full:c}</div>
       <div class="v num" style="font-size:20px;color:var(--gold);margin:6px 0 2px">${fmt(d.share,1)}<small> 亿份</small></div>
-      <div class="d">规模约 ${d.scale>=1000?(d.scale/1000).toFixed(2)+'千亿':d.scale+'亿'}</div></div>`;
+      <div class="d">规模约 ${d.scale>=1000?(d.scale/1000).toFixed(2)+'千亿':Math.round(d.scale)+'亿'}${isLive?' · <span style="color:var(--up)">最新</span>':' · 快照'}</div></div>`;
   }).join('');
 
   // ETF行情表
   $('#etfTableBody').innerHTML=ETFs.map(e=>{
-    const q=quotes[e.code]||{};const sh=SHARE_SNAP[e.code.slice(2)];
+    const q=quotes[e.code]||{};const sh=getShare(e.code.slice(2));
     let sig='—',pill='wait';
     if(q.amount>80000&&q.pct>0){sig='放量上涨';pill='buy';}
     else if(q.amount>80000&&q.pct<0){sig='放量下跌';pill='avoid';}
@@ -1073,7 +1126,8 @@ function renderETF(){
       <td class="num ${cls(q.pct)}">${fmt(q.price,3)}</td>
       <td class="num ${cls(q.pct)}">${sign(q.pct)}%</td>
       <td class="num">${fmt(q.amount/1e4,1)}</td>
-      <td class="num" style="color:var(--txt2)">${sh?sh.scale:'—'}</td>
+      <td class="num" style="color:var(--gold)">${sh?fmt(sh.share,1):'—'}</td>
+      <td class="num" style="color:var(--txt2)">${sh?Math.round(sh.scale):'—'}</td>
       <td><span class="pill ${pill}">${sig}</span></td></tr>`;
   }).join('');
 
@@ -1461,12 +1515,14 @@ function init(){
   const st=marketStatus();
   $('#status').textContent=st.txt;
   $('#dot').classList.toggle('closed',!st.live);
-  fetchQuotes();refreshFlow();fetchLimitUp();
+  fetchQuotes();refreshFlow();fetchLimitUp();fetchShares();
   setInterval(fetchQuotes,15000);
   setInterval(refreshFlow,60000);
   setInterval(fetchLimitUp,60000);
+  setInterval(fetchShares,30*60*1000); // 份额每半小时检查一次（内部按日期缓存）
   setInterval(()=>{const s=marketStatus();$('#status').textContent=s.txt;$('#dot').classList.toggle('closed',!s.live);},30000);
-  $('#refreshBtn').onclick=()=>{fetchQuotes();refreshFlow();fetchLimitUp();toast('数据已刷新');};
+  $('#refreshBtn').onclick=()=>{fetchQuotes();refreshFlow();fetchLimitUp();
+    Object.keys(SHARE_LIVE).forEach(k=>delete SHARE_LIVE[k]);fetchShares();toast('数据已刷新');};
   $('#watchAddBtn').onclick=addWatchStocks;
   $('#watchInput').addEventListener('keydown',e=>{if(e.key==='Enter')addWatchStocks();});
   $('#watchAddETFBtn').onclick=addNationETFs;
